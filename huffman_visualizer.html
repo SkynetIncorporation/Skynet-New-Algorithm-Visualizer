@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Huffman paso a paso</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#e9eef1; --panel:#f7f9fa; --ink:#12222d; --mute:#5b6e7a; --line:#b4c3cc;
+  --teal:#0f766e; --teal-t:#cfe8e5; --amber:#e8a010; --on-teal:#fff;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1a21; --panel:#162530; --ink:#e3edf2; --mute:#8fa5b2; --line:#34505f;
+    --teal:#3cb8ab; --teal-t:#1e4a4a; --amber:#f2b632; --on-teal:#06231f; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1a21; --panel:#162530; --ink:#e3edf2; --mute:#8fa5b2; --line:#34505f;
+  --teal:#3cb8ab; --teal-t:#1e4a4a; --amber:#f2b632; --on-teal:#06231f; color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Instrument Sans",system-ui,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:24px 16px 48px}
+h1{font-size:26px;margin:0 0 4px;font-weight:600;letter-spacing:-.01em}
+.sub{margin:0 0 20px;color:var(--mute)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+#stack{display:flex;gap:12px;align-items:flex-start;overflow-x:auto;position:relative;min-height:170px;padding:12px 4px 10px;margin-bottom:16px}
+#stack:empty::before{content:"Las cajas de frecuencia irán apareciendo aquí.";color:var(--mute);align-self:center;padding-left:8px}
+.box{flex:none;width:68px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.count{font:600 18px "JetBrains Mono",ui-monospace,monospace;height:26px;opacity:0;transition:opacity .3s}
+.counting .count{opacity:1}
+.body{width:100%;min-height:64px;border:2px solid var(--teal);border-radius:8px;background:var(--teal-t);padding:4px;display:flex;flex-wrap:wrap;gap:2px;align-content:flex-start}
+.l{width:26px;height:26px;line-height:26px;text-align:center;font:600 15px "JetBrains Mono",ui-monospace,monospace;color:var(--ink);transition:opacity .2s,transform .2s}
+.l.out{opacity:0;transform:scale(.4)}
+.key{font:600 14px "JetBrains Mono",ui-monospace,monospace;color:var(--mute);min-width:26px;text-align:center;border-top:2px solid var(--line);padding-top:2px}
+#view{position:relative;max-height:42vh;overflow:auto;padding:6px;margin-bottom:16px}
+.cell{display:inline-block;width:32px;height:32px;line-height:32px;text-align:center;border-radius:4px;font:400 20px "JetBrains Mono",ui-monospace,monospace;vertical-align:top;transition:background .3s}
+.cell.seen{background:var(--teal-t)}
+.cell.nl{color:var(--mute);font-size:14px}
+#ptr{position:absolute;left:0;top:0;width:32px;height:32px;border:2px solid var(--amber);border-radius:4px;pointer-events:none;transition:transform .2s ease}
+.fly{position:fixed;z-index:50;transform-origin:0 0;text-align:center;font:600 20px "JetBrains Mono",ui-monospace,monospace;line-height:32px;color:var(--amber);pointer-events:none}
+textarea{display:block;width:100%;min-height:120px;resize:vertical;margin-bottom:16px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);font:400 17px/1.5 "JetBrains Mono",ui-monospace,monospace}
+textarea:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+button{font:600 15px "Instrument Sans",system-ui,sans-serif;padding:9px 16px;border-radius:8px;border:1px solid var(--teal);background:var(--teal);color:var(--on-teal);cursor:pointer}
+button.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+button:disabled{opacity:.4;cursor:not-allowed}
+label.sp{display:flex;gap:8px;align-items:center;color:var(--mute);margin-left:auto}
+#status{min-height:1.5em;margin:14px 0 0;color:var(--mute)}
+[hidden]{display:none!important}
+#tree{overflow:auto;margin-bottom:16px;padding:12px}
+#tin{position:relative}
+#arrows{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
+#arrows line{stroke:var(--mute);stroke-width:2}
+#arrows marker path{fill:var(--mute)}
+.node{position:absolute;left:0;top:0;width:52px;height:52px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid var(--teal);background:var(--teal-t);line-height:1.1}
+.node.in{border-color:var(--mute);background:var(--panel)}
+.node.hot{outline:3px solid var(--amber);outline-offset:2px}
+.node .w{font:600 16px "JetBrains Mono",ui-monospace,monospace}
+.node .c{font:600 13px "JetBrains Mono",ui-monospace,monospace;color:var(--mute)}
+.elabel{position:absolute;width:22px;height:22px;border-radius:50%;background:var(--panel);border:2px solid var(--amber);color:var(--ink);font:600 13px "JetBrains Mono",ui-monospace,monospace;display:flex;align-items:center;justify-content:center;transform:translate(-50%,-50%)}
+.cbox{position:absolute;left:0;top:0;min-width:30px;height:28px;padding:0 7px;border-radius:6px;background:var(--amber);color:#1b1200;font:600 14px "JetBrains Mono",ui-monospace,monospace;display:flex;align-items:center;justify-content:center;white-space:nowrap;z-index:2}
+.cbox.done{background:var(--teal-t);color:var(--ink);box-shadow:inset 0 0 0 2px var(--teal)}
+#row{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
+#row #tree{flex:1 1 420px;min-width:0}
+#out{flex:0 1 260px;min-height:96px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start}
+.obox{min-width:30px;height:28px;padding:0 7px;border-radius:6px;background:var(--teal-t);color:var(--ink);box-shadow:inset 0 0 0 2px var(--teal);font:600 14px "JetBrains Mono",ui-monospace,monospace;display:flex;align-items:center;justify-content:center}
+.cbox.fixed{position:fixed;z-index:60;pointer-events:none}
+.seg{display:inline-flex;margin-bottom:12px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{background:transparent;color:var(--ink);border:0;border-radius:0;padding:8px 16px}
+.seg button[aria-pressed="true"]{background:var(--teal);color:var(--on-teal)}
+@media (prefers-reduced-motion:reduce){#ptr,.cell,.l,.count{transition:none}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Huffman paso a paso</h1>
+  <p class="sub" id="sub">Escribe un texto y observa cómo se cuentan sus caracteres.</p>
+
+  <div id="stack" class="panel" aria-label="Cajas de frecuencia"></div>
+
+  <div id="row">
+  <div id="tree" class="panel" hidden aria-label="Nodos y árbol de Huffman">
+    <div id="tin"><svg id="arrows" width="0" height="0"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z"/></marker></defs></svg></div>
+  </div>
+  <div id="out" class="panel" hidden aria-label="Texto codificado"></div>
+  </div>
+
+  <div class="seg" role="group" aria-label="Modo"><button id="mc" aria-pressed="true">Comprimir</button><button id="md" aria-pressed="false">Descomprimir</button></div>
+  <textarea id="text" aria-label="Texto a analizar">Esto es un ejemplo de compresión</textarea>
+  <div id="view" class="panel" hidden></div>
+
+  <div class="bar">
+    <button id="start">Iniciar</button>
+    <button id="next" disabled>Siguiente</button>
+    <button id="reset" class="ghost" disabled>Reiniciar</button>
+    <label class="sp">Velocidad <input id="speed" type="range" min="1" max="10" value="4"></label>
+  </div>
+  <p id="status" aria-live="polite"></p>
+</main>
+
+<script>
+const CANCEL = Symbol("cancel");
+const label = c => c === " " ? "␣" : c === "\n" ? "↵" : c === "\t" ? "⇥" : c;
+
+class HuffmanViz {
+  #text; #view; #stack; #status; #start; #next; #reset; #speed;
+  #ptr = null; #cells = []; #boxes = new Map(); #token = 0;
+  #tree; #tin; #arrows; #out; #mc; #md; #sub; #mode = "c"; #busy = false; #dActive = false; #ctext = ""; #chars = []; #codes = new Map(); #nodes = []; #queue = []; #stage = 0;
+
+  constructor() {
+    const g = id => document.getElementById(id);
+    this.#text = g("text"); this.#view = g("view"); this.#stack = g("stack");
+    this.#status = g("status"); this.#start = g("start"); this.#next = g("next");
+    this.#reset = g("reset"); this.#speed = g("speed");
+    this.#tree = g("tree"); this.#tin = g("tin"); this.#arrows = g("arrows"); this.#out = g("out");
+    this.#mc = g("mc"); this.#md = g("md"); this.#sub = g("sub");
+    this.#mc.onclick = () => this.#setMode("c");
+    this.#md.onclick = () => this.#setMode("d");
+    this.#start.onclick = () => this.#run();
+    this.#next.onclick = () => this.#advance();
+    this.#reset.onclick = () => this.#restore();
+    this.#sync();
+  }
+
+  get #step() { return 1200 / Number(this.#speed.value); }
+
+  #sleep(ms, t) {
+    return new Promise(r => setTimeout(r, ms)).then(() => { if (t !== this.#token) throw CANCEL; });
+  }
+
+  #build(chars) {
+    this.#text.hidden = true;
+    this.#view.hidden = false;
+    this.#view.innerHTML = "";
+    this.#stack.innerHTML = "";
+    this.#stack.classList.remove("counting");
+    this.#boxes.clear();
+    this.#clearTree();
+    this.#chars = chars;
+    this.#cells = chars.map(ch => {
+      const s = document.createElement("span");
+      s.className = "cell" + (ch === "\n" ? " nl" : "");
+      s.textContent = ch === " " ? "\u00a0" : ch === "\n" ? "↵" : ch;
+      this.#view.append(s);
+      if (ch === "\n") this.#view.append(document.createElement("br"));
+      return s;
+    });
+    this.#ptr = document.createElement("div");
+    this.#ptr.id = "ptr";
+    this.#view.append(this.#ptr);
+  }
+
+  #newBox(ch) {
+    const el = document.createElement("div");
+    el.className = "box";
+    el.innerHTML = '<div class="count">0</div><div class="body"></div><div class="key"></div>';
+    el.querySelector(".key").textContent = label(ch);
+    this.#stack.append(el);
+    const box = { el, body: el.querySelector(".body"), count: el.querySelector(".count"), n: 0, letters: [] };
+    this.#boxes.set(ch, box);
+    return box;
+  }
+
+  #addLetter(box, ch) {
+    const l = document.createElement("div");
+    l.className = "l";
+    l.textContent = label(ch);
+    box.body.append(l);
+    box.letters.push(l);
+    return l;
+  }
+
+  #reveal(box) {
+    const s = this.#stack, b = box.el;
+    if (b.offsetLeft < s.scrollLeft || b.offsetLeft + b.offsetWidth > s.scrollLeft + s.clientWidth) {
+      s.scrollLeft = b.offsetLeft - s.clientWidth / 2;
+    }
+  }
+
+  async #run() {
+    if (this.#mode === "d") return this.#runDecomp();
+    const chars = [...this.#text.value];
+    if (!chars.length) {
+      this.#status.textContent = "Escribe un texto para empezar.";
+      this.#text.focus();
+      return;
+    }
+    const t = ++this.#token;
+    this.#build(chars);
+    this.#next.disabled = true;
+    this.#busy = true;
+    this.#sync();
+    try {
+      await this.#countPhase(chars, t);
+      await this.#clearPhase(t);
+    } catch (e) {
+      if (e !== CANCEL) throw e;
+    } finally {
+      if (t === this.#token) { this.#busy = false; this.#sync(); }
+    }
+  }
+
+  async #countPhase(chars, t) {
+    for (let i = 0; i < chars.length; i++) {
+      const ch = chars[i], cell = this.#cells[i], step = this.#step;
+      this.#status.textContent = `Etapa 1: leyendo carácter ${i + 1} de ${chars.length}`;
+      cell.scrollIntoView({ block: "nearest" });
+      this.#ptr.style.transitionDuration = Math.min(300, step * 0.5) + "ms";
+      this.#ptr.style.transform = `translate(${cell.offsetLeft}px,${cell.offsetTop}px)`;
+      await this.#sleep(step * 0.6, t);
+
+      let box = this.#boxes.get(ch);
+      if (!box) {
+        box = this.#newBox(ch);
+        this.#reveal(box);
+        box.el.animate([{ opacity: 0, transform: "scale(.6)" }, { opacity: 1, transform: "none" }], { duration: step * 0.5, easing: "ease-out" });
+        await this.#sleep(step * 0.5, t);
+        const l = this.#addLetter(box, ch);
+        l.animate([{ transform: "scale(0)" }, { transform: "none" }], { duration: step * 0.3 });
+        await this.#sleep(step * 0.3, t);
+      } else {
+        this.#reveal(box);
+        const slot = this.#addLetter(box, ch);
+        slot.style.visibility = "hidden";
+        const a = cell.getBoundingClientRect(), b = slot.getBoundingClientRect();
+        const f = document.createElement("div");
+        f.className = "fly";
+        f.textContent = label(ch);
+        Object.assign(f.style, { left: a.left + "px", top: a.top + "px", width: a.width + "px", height: a.height + "px" });
+        document.body.append(f);
+        const d = Math.min(700, Math.max(200, step * 0.9));
+        try {
+          f.animate(
+            [{ transform: "none" }, { transform: `translate(${b.left - a.left}px,${b.top - a.top}px) scale(${b.width / a.width},${b.height / a.height})` }],
+            { duration: d, easing: "ease-in-out", fill: "forwards" }
+          );
+          await this.#sleep(d, t);
+          slot.style.visibility = "visible";
+        } finally { f.remove(); }
+      }
+      cell.classList.add("seen");
+    }
+  }
+
+  async #clearPhase(t) {
+    this.#status.textContent = "Etapa 2: contando las apariciones de cada carácter";
+    this.#stack.classList.add("counting");
+    await this.#sleep(this.#step, t);
+    let any = true;
+    while (any) {
+      any = false;
+      for (const b of this.#boxes.values()) {
+        const l = b.letters.pop();
+        if (!l) continue;
+        any = true;
+        l.classList.add("out");
+        setTimeout(() => l.remove(), 220);
+        b.count.textContent = ++b.n;
+        b.count.animate([{ transform: "scale(1.5)" }, { transform: "none" }], { duration: 220 });
+      }
+      await this.#sleep(this.#step * 0.6, t);
+    }
+    const total = this.#cells.length;
+    this.#status.textContent = `Listo: ${this.#boxes.size} caracteres distintos en ${total} en total. Pulsa Siguiente para continuar.`;
+    this.#stage = 2;
+    this.#next.disabled = false;
+  }
+
+  #clearTree() {
+    this.#nodes = []; this.#queue = []; this.#stage = 0;
+    this.#tree.hidden = true;
+    this.#out.hidden = true; this.#out.innerHTML = ""; this.#codes.clear();
+    this.#tin.querySelectorAll(".node,.elabel,.cbox").forEach(n => n.remove());
+    this.#arrows.querySelectorAll("line").forEach(n => n.remove());
+  }
+
+  #mkNode(o) {
+    const el = document.createElement("div");
+    el.className = "node" + (o.l ? " in" : "");
+    el.innerHTML = '<span class="w"></span>' + (o.l ? "" : '<span class="c"></span>');
+    el.querySelector(".w").textContent = o.w;
+    if (!o.l) el.querySelector(".c").textContent = label(o.ch);
+    this.#tin.append(el);
+    o.el = el; o.lines = [];
+    if (o.l) {
+      for (const c of [o.l, o.r]) {
+        const ln = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        ln.setAttribute("marker-end", "url(#ah)");
+        this.#arrows.append(ln);
+        o.lines.push([ln, c]);
+      }
+    }
+    this.#nodes.push(o);
+    return o;
+  }
+
+  #draw(o) {
+    o.el.style.transform = `translate(${o.x - 26}px,${o.y - 26}px)`;
+    for (const [ln, c] of o.lines) {
+      const dx = c.x - o.x, dy = c.y - o.y, len = Math.hypot(dx, dy) || 1;
+      ln.setAttribute("x1", o.x + dx / len * 26); ln.setAttribute("y1", o.y + dy / len * 26);
+      ln.setAttribute("x2", c.x - dx / len * 29); ln.setAttribute("y2", c.y - dy / len * 29);
+    }
+  }
+
+  #layout() {
+    const SLOT = 64, GAP = 84;
+    let idx = 0;
+    const h = o => o.l ? 1 + Math.max(h(o.l), h(o.r)) : 0;
+    const H = Math.max(0, ...this.#queue.map(h));
+    const walk = o => {
+      if (!o.l) o.tx = idx++ * SLOT + SLOT / 2;
+      else { walk(o.l); walk(o.r); o.tx = (o.l.tx + o.r.tx) / 2; }
+      o.ty = 34 + (H - h(o)) * GAP;
+    };
+    this.#queue.forEach(walk);
+    const w = idx * SLOT, ht = 68 + H * GAP;
+    this.#tin.style.width = w + "px"; this.#tin.style.height = ht + "px";
+    this.#arrows.setAttribute("width", w); this.#arrows.setAttribute("height", ht);
+  }
+
+  async #tween(d, t) {
+    const ns = this.#nodes, t0 = performance.now();
+    ns.forEach(o => { o.x0 = o.x; o.y0 = o.y; });
+    await new Promise(res => {
+      const f = now => {
+        if (t !== this.#token) return res();
+        const p = Math.min(1, (now - t0) / d), e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+        for (const o of ns) { o.x = o.x0 + (o.tx - o.x0) * e; o.y = o.y0 + (o.ty - o.y0) * e; this.#draw(o); }
+        p < 1 ? requestAnimationFrame(f) : res();
+      };
+      requestAnimationFrame(f);
+    });
+    if (t !== this.#token) throw CANCEL;
+  }
+
+  async #sortPhase(t) {
+    const step = this.#step;
+    this.#status.textContent = "Etapa 3: ordenando los nodos de menor a mayor frecuencia";
+    this.#tree.hidden = false;
+    this.#tree.scrollIntoView({ block: "nearest" });
+    const origin = this.#tin.getBoundingClientRect();
+    const nodes = [...this.#boxes.entries()].map(([ch, b], i) => {
+      const r = b.el.getBoundingClientRect();
+      const o = this.#mkNode({ w: b.n, ch, i });
+      o.x = r.left + r.width / 2 - origin.left; o.y = 34;
+      return o;
+    });
+    this.#queue = [...nodes].sort((a, b) => a.w - b.w || a.i - b.i);
+    this.#layout();
+    nodes.forEach(o => { this.#draw(o); o.el.animate([{ opacity: 0 }, { opacity: 1 }], { duration: step * 0.5 }); });
+    await this.#sleep(step * 0.7, t);
+    await this.#tween(Math.min(1800, step * 3), t);
+  }
+
+  async #mergePhase(t) {
+    const q = this.#queue, step = this.#step;
+    if (q.length < 2) { this.#status.textContent = "Solo hay un carácter distinto: el árbol es un único nodo."; return; }
+    const fade = [{ opacity: 0 }, { opacity: 1 }];
+    while (q.length > 1) {
+      const [a, b] = q;
+      this.#status.textContent = `Etapa 4: combinando ${a.w} + ${b.w} = ${a.w + b.w}`;
+      a.el.classList.add("hot"); b.el.classList.add("hot");
+      await this.#sleep(step * 0.6, t);
+      q.splice(0, 2);
+      const p = this.#mkNode({ w: a.w + b.w, l: a, r: b });
+      q.unshift(p);
+      this.#layout();
+      p.x = p.tx; p.y = p.ty;
+      this.#nodes.forEach(o => this.#draw(o));
+      p.el.animate(fade, { duration: step * 0.5 });
+      p.lines.forEach(([ln]) => ln.animate(fade, { duration: step * 0.5 }));
+      await this.#tween(step * 0.8, t);
+      a.el.classList.remove("hot"); b.el.classList.remove("hot");
+      q.shift();
+      let i = q.findIndex(o => o.w > p.w);
+      if (i < 0) i = q.length;
+      q.splice(i, 0, p);
+      if (i > 0) { this.#layout(); await this.#tween(step * 1.2, t); }
+    }
+    this.#status.textContent = `Árbol de Huffman completo: la raíz suma ${q[0].w}.`;
+  }
+
+  #sync() {
+    const lock = this.#busy || (this.#stage > 0 && this.#stage < 6), d = this.#mode === "d";
+    this.#mc.disabled = lock; this.#md.disabled = lock;
+    this.#start.disabled = this.#busy || (!d && this.#stage > 0 && this.#stage < 6);
+    this.#reset.disabled = !(this.#busy || (d ? this.#dActive : this.#stage > 0));
+    if (d) this.#next.disabled = true;
+  }
+
+  #cleanD() {
+    this.#dActive = false;
+    document.querySelectorAll(".fly,.cbox.fixed").forEach(n => n.remove());
+    this.#tin.querySelectorAll(".dbox").forEach(n => n.remove());
+  }
+
+  #setMode(m) {
+    if (m === this.#mode) return;
+    this.#cleanD();
+    this.#mode = m;
+    this.#mc.setAttribute("aria-pressed", m === "c");
+    this.#md.setAttribute("aria-pressed", m === "d");
+    this.#view.hidden = true;
+    this.#text.hidden = false;
+    this.#next.disabled = true;
+    if (m === "d") {
+      this.#ctext = this.#text.value;
+      const ready = this.#stage === 6;
+      this.#text.value = ready ? this.#chars.map(c => this.#codes.get(c)?.code ?? "").join("") : "";
+      this.#text.placeholder = "Escribe una secuencia de 0 y 1";
+      this.#text.setAttribute("aria-label", "Secuencia binaria a decodificar");
+      this.#sub.textContent = "Escribe una secuencia de 0 y 1 y observa cómo el árbol la convierte en texto.";
+      this.#status.textContent = ready ? "" : "Primero comprime un texto para construir el árbol.";
+    } else {
+      this.#text.value = this.#ctext;
+      this.#text.placeholder = "";
+      this.#text.setAttribute("aria-label", "Texto a analizar");
+      this.#sub.textContent = "Escribe un texto y observa cómo se cuentan sus caracteres.";
+      this.#status.textContent = "";
+    }
+    this.#sync();
+  }
+
+  async #runDecomp() {
+    if (this.#stage !== 6) { this.#status.textContent = "Primero comprime un texto para construir el árbol."; return; }
+    const raw = this.#text.value.replace(/\s+/g, "");
+    if (!raw) { this.#status.textContent = "Escribe una secuencia de 0 y 1 para empezar."; this.#text.focus(); return; }
+    if (/[^01]/.test(raw)) { this.#status.textContent = "Solo se admiten los caracteres 0 y 1."; return; }
+    const bits = [...raw], t = ++this.#token;
+    this.#cleanD();
+    this.#dActive = true; this.#busy = true;
+    this.#text.hidden = true; this.#view.hidden = false;
+    this.#view.innerHTML = ""; this.#out.innerHTML = ""; this.#view.scrollTop = 0;
+    this.#cells = bits.map(b => {
+      const s = document.createElement("span");
+      s.className = "cell"; s.textContent = b;
+      this.#view.append(s);
+      return s;
+    });
+    this.#ptr = document.createElement("div");
+    this.#ptr.id = "ptr";
+    this.#view.append(this.#ptr);
+    this.#sync();
+    try {
+      await this.#decodePhase(bits, t);
+    } catch (e) {
+      if (e !== CANCEL) throw e;
+    } finally {
+      if (t === this.#token) { this.#busy = false; this.#sync(); }
+    }
+  }
+
+  #restoreDecomp() {
+    this.#token++;
+    this.#busy = false;
+    this.#cleanD();
+    this.#out.innerHTML = "";
+    this.#view.hidden = true;
+    this.#text.hidden = false;
+    this.#status.textContent = "";
+    this.#sync();
+  }
+
+  async #decodePhase(bits, t) {
+    const step = this.#step, v = this.#view, root = this.#queue[0], n = bits.length;
+    const fade = [{ opacity: 0 }, { opacity: 1 }];
+    const pos = (x, y) => `translate(${x}px,${y}px) translate(-50%,-50%)`;
+    const glide = (el, from, to, d) => {
+      el.style.transform = to;
+      el.animate([{ transform: from }, { transform: to }], { duration: d, easing: "ease-in-out" });
+    };
+    const d = Math.min(550, step * 0.7);
+    let node = root, box = null, count = 0;
+    for (let i = 0; i < n; i++) {
+      const bit = bits[i], cell = this.#cells[i];
+      this.#status.textContent = `Descomprimiendo: leyendo bit ${i + 1} de ${n}`;
+      if (cell.offsetTop < v.scrollTop || cell.offsetTop + 32 > v.scrollTop + v.clientHeight) v.scrollTop = cell.offsetTop - v.clientHeight / 2;
+      this.#ptr.style.transitionDuration = Math.min(300, step * 0.5) + "ms";
+      this.#ptr.style.transform = `translate(${cell.offsetLeft}px,${cell.offsetTop}px)`;
+      if (!box) {
+        box = document.createElement("div");
+        box.className = "cbox dbox";
+        box.style.transform = pos(root.x, root.y);
+        this.#tin.append(box);
+        box.animate(fade, { duration: step * 0.3 });
+      }
+      this.#frame([cell, box]);
+      await this.#sleep(step * 0.5, t);
+
+      const a = cell.getBoundingClientRect(), b = box.getBoundingClientRect();
+      const f = document.createElement("div");
+      f.className = "fly"; f.textContent = bit;
+      Object.assign(f.style, { left: a.left + "px", top: a.top + "px", width: a.width + "px", height: a.height + "px" });
+      document.body.append(f);
+      try {
+        f.animate(
+          [{ transform: "none" }, { transform: `translate(${b.left + b.width / 2 - a.left - a.width * 0.3}px,${b.top + b.height / 2 - a.top - a.height * 0.3}px) scale(.6)` }],
+          { duration: d, easing: "ease-in-out", fill: "forwards" }
+        );
+        await this.#sleep(d, t);
+      } finally { f.remove(); }
+      box.textContent += bit;
+      cell.classList.add("seen");
+
+      if (node.l) {
+        const next = bit === "0" ? node.l : node.r;
+        await this.#sleep(step * 0.2, t);
+        glide(box, pos(node.x, node.y), pos(next.x, next.y), d);
+        await this.#sleep(d, t);
+        node = next;
+      }
+      if (!node.l) {
+        box.textContent = label(node.ch);
+        await this.#sleep(step * 0.4, t);
+        const slot = document.createElement("div");
+        slot.className = "obox"; slot.textContent = label(node.ch); slot.style.visibility = "hidden";
+        this.#out.append(slot);
+        this.#frame([box, slot]);
+        const r = box.getBoundingClientRect(), c = slot.getBoundingClientRect();
+        const ox = r.left + r.width / 2, oy = r.top + r.height / 2;
+        const g = document.createElement("div");
+        g.className = "cbox fixed"; g.textContent = label(node.ch);
+        g.style.left = ox + "px"; g.style.top = oy + "px"; g.style.transform = pos(0, 0);
+        document.body.append(g);
+        box.remove();
+        try {
+          glide(g, pos(0, 0), pos(c.left + c.width / 2 - ox, c.top + c.height / 2 - oy), d);
+          await this.#sleep(d, t);
+          slot.style.visibility = "visible";
+        } finally { g.remove(); }
+        box = null; node = root; count++;
+      }
+    }
+    this.#status.textContent = box
+      ? `Descompresión terminada: ${count} caracteres. Los últimos bits no llegan a ninguna hoja.`
+      : `Descompresión completa: ${count} caracteres recuperados.`;
+  }
+
+  #frame(els) {
+    const r = els.map(e => e.getBoundingClientRect()), vh = window.innerHeight;
+    const top = Math.min(...r.map(x => x.top)), bot = Math.max(...r.map(x => x.bottom));
+    if (top >= 8 && bot <= vh - 8) return;
+    window.scrollBy(0, bot - top <= vh - 16 ? (top + bot) / 2 - vh / 2 : r[0].top - vh / 2);
+  }
+
+  async #composePhase(t) {
+    const step = this.#step, v = this.#view, n = this.#chars.length;
+    this.#out.hidden = false;
+    this.#cells.forEach(c => c.classList.remove("seen"));
+    v.scrollTop = 0;
+    const pos = (x, y) => `translate(${x}px,${y}px) translate(-50%,-50%)`;
+    const glide = (el, from, to, d) => {
+      el.style.transform = to;
+      el.animate([{ transform: from }, { transform: to }], { duration: d, easing: "ease-in-out" });
+    };
+    const d = Math.min(550, step * 0.7);
+    let bits = 0;
+    for (let i = 0; i < n; i++) {
+      const ch = this.#chars[i], cell = this.#cells[i], { leaf, code } = this.#codes.get(ch);
+      this.#status.textContent = `Etapa 6: codificando carácter ${i + 1} de ${n}`;
+      if (cell.offsetTop < v.scrollTop || cell.offsetTop + 32 > v.scrollTop + v.clientHeight) v.scrollTop = cell.offsetTop - v.clientHeight / 2;
+      this.#ptr.style.transitionDuration = Math.min(300, step * 0.5) + "ms";
+      this.#ptr.style.transform = `translate(${cell.offsetLeft}px,${cell.offsetTop}px)`;
+      const slot = document.createElement("div");
+      slot.className = "obox"; slot.textContent = code; slot.style.visibility = "hidden";
+      this.#out.append(slot);
+      this.#frame([cell, leaf.el, slot]);
+      await this.#sleep(step * 0.5, t);
+
+      const a = cell.getBoundingClientRect(), b = leaf.el.getBoundingClientRect(), c = slot.getBoundingClientRect();
+      const ox = a.left + a.width / 2, oy = a.top + a.height / 2;
+      const p1 = pos(b.left + b.width / 2 - ox, b.top + b.height / 2 - oy);
+      const f = document.createElement("div");
+      f.className = "cbox fixed"; f.textContent = label(ch);
+      f.style.left = ox + "px"; f.style.top = oy + "px"; f.style.transform = pos(0, 0);
+      document.body.append(f);
+      try {
+        glide(f, pos(0, 0), p1, d);
+        await this.#sleep(d, t);
+        f.textContent = code;
+        await this.#sleep(step * 0.3, t);
+        glide(f, p1, pos(c.left + c.width / 2 - ox, c.top + c.height / 2 - oy), d);
+        await this.#sleep(d, t);
+        slot.style.visibility = "visible";
+      } finally { f.remove(); }
+      cell.classList.add("seen");
+      bits += code.length;
+    }
+    this.#status.textContent = `Texto codificado: ${bits} bits en lugar de ${n * 8} (8 bits por carácter).`;
+  }
+
+  async #codePhase(t) {
+    const step = this.#step, root = this.#queue[0], fade = [{ opacity: 0 }, { opacity: 1 }];
+    this.#status.textContent = "Etapa 5: asignando códigos (arista izquierda = 0, derecha = 1)";
+    this.#tin.style.height = (parseFloat(this.#tin.style.height) + 56) + "px";
+    const labels = o => {
+      if (!o.l) return;
+      for (const [c, b] of [[o.l, 0], [o.r, 1]]) {
+        const e = document.createElement("div");
+        e.className = "elabel"; e.textContent = b;
+        e.style.left = (o.x + c.x) / 2 + "px"; e.style.top = (o.y + c.y) / 2 + "px";
+        this.#tin.append(e);
+        e.animate(fade, { duration: step * 0.5 });
+        labels(c);
+      }
+    };
+    labels(root);
+    await this.#sleep(step * 0.8, t);
+
+    const paths = [];
+    const dfs = (o, nodes, bits) => {
+      if (!o.l) { paths.push({ o, nodes, bits }); return; }
+      dfs(o.l, [...nodes, o.l], [...bits, 0]);
+      dfs(o.r, [...nodes, o.r], [...bits, 1]);
+    };
+    dfs(root, [root], []);
+    paths.forEach(({ o, bits }) => this.#codes.set(o.ch, { leaf: o, code: bits.join("") || "0" }));
+
+    const pos = (x, y) => `translate(${x}px,${y}px) translate(-50%,-50%)`;
+    const glide = (el, x, y, d) => {
+      const from = el.style.transform;
+      el.style.transform = pos(x, y);
+      el.animate([{ transform: from }, { transform: pos(x, y) }], { duration: d, easing: "ease-in-out" });
+    };
+    const d = Math.min(600, step * 0.7);
+    for (const { o, nodes, bits } of paths) {
+      const box = document.createElement("div");
+      box.className = "cbox";
+      box.style.transform = pos(root.x, root.y);
+      this.#tin.append(box);
+      box.animate(fade, { duration: step * 0.3 });
+      await this.#sleep(step * 0.4, t);
+      for (let i = 1; i < nodes.length; i++) {
+        glide(box, nodes[i].x, nodes[i].y, d);
+        await this.#sleep(d / 2, t);
+        box.textContent += bits[i - 1];
+        await this.#sleep(d / 2, t);
+      }
+      if (!bits.length) box.textContent = "0";
+      glide(box, o.x, o.y + 52, d);
+      await this.#sleep(d + step * 0.2, t);
+      box.classList.add("done");
+    }
+    this.#status.textContent = `Códigos listos: ${paths.length} hojas, cada una con su código.`;
+  }
+
+  async #advance() {
+    const t = this.#token;
+    this.#next.disabled = true;
+    this.#busy = true;
+    this.#sync();
+    try {
+      if (this.#stage === 2) {
+        this.#stage = 3;
+        await this.#sortPhase(t);
+        this.#status.textContent = "Etapa 3 lista: nodos ordenados de menor a mayor. Pulsa Siguiente para combinarlos.";
+        this.#next.disabled = false;
+      } else if (this.#stage === 3) {
+        this.#stage = 4;
+        await this.#mergePhase(t);
+        this.#status.textContent += " Pulsa Siguiente para generar los códigos.";
+        this.#next.disabled = false;
+      } else if (this.#stage === 4) {
+        this.#stage = 5;
+        await this.#codePhase(t);
+        this.#status.textContent += " Pulsa Siguiente para componer el texto codificado.";
+        this.#next.disabled = false;
+      } else if (this.#stage === 5) {
+        this.#stage = 6;
+        await this.#composePhase(t);
+      }
+    } catch (e) {
+      if (e !== CANCEL) throw e;
+    } finally {
+      if (t === this.#token) { this.#busy = false; this.#sync(); }
+    }
+  }
+
+  #restore() {
+    if (this.#mode === "d") return this.#restoreDecomp();
+    this.#busy = false;
+    this.#token++;
+    document.querySelectorAll(".fly").forEach(n => n.remove());
+    this.#stack.innerHTML = "";
+    this.#stack.classList.remove("counting");
+    this.#boxes.clear();
+    this.#cells = [];
+    this.#clearTree();
+    this.#view.hidden = true;
+    this.#text.hidden = false;
+    this.#start.disabled = false;
+    this.#next.disabled = true;
+    this.#reset.disabled = true;
+    this.#status.textContent = "";
+    this.#sync();
+  }
+}
+
+new HuffmanViz();
+</script>
+</body>
+</html>
