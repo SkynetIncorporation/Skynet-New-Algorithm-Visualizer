@@ -276,9 +276,15 @@ label.sp{display:flex;gap:8px;align-items:center;color:var(--mute);margin-left:a
   <div id="book-results" aria-label="Resultados de búsqueda"></div>
 
   <div id="selected-book" hidden aria-live="polite">
-    <strong>Libro seleccionado:</strong>
-    <p id="selected-book-info"></p>
-  </div>
+  <strong>Libro seleccionado:</strong>
+  <p id="selected-book-info"></p>
+
+  <button type="button" id="load-book-text">
+    Descargar texto completo
+  </button>
+
+  <p id="book-download-status" role="status" aria-live="polite"></p>
+</div>
 </section>
   <div class="seg" role="group" aria-label="Modo"><button id="mc" aria-pressed="true">Comprimir</button><button id="md" aria-pressed="false">Descomprimir</button></div>
   <textarea id="text" aria-label="Texto a analizar">Esto es un ejemplo de compresión</textarea>
