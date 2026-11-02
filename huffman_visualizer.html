@@ -1016,13 +1016,8 @@ bookSearchForm.addEventListener("submit", async (event) => {
     return;
   }
 
-  const formats = book.formats || {};
-
-  const textUrl = Object.entries(formats).find(([mime, url]) =>
-    mime.toLowerCase().startsWith("text/plain") &&
-    typeof url === "string" &&
-    !url.toLowerCase().endsWith(".zip")
-  )?.[1];
+ const textUrl =
+  `https://gutenberg.pglaf.org/cache/epub/${book.id}/pg${book.id}.txt`;
 
   if (!textUrl) {
     bookDownloadStatus.textContent =
