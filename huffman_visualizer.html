@@ -1008,6 +1008,61 @@ bookSearchForm.addEventListener("submit", async (event) => {
     searchButton.disabled = false;
   }
 });
+    loadBookTextButton.addEventListener("click", async () => {
+  const book = window.libroGutendexSeleccionado;
+
+  if (!book) {
+    bookDownloadStatus.textContent = "Primero selecciona un libro.";
+    return;
+  }
+
+  const formats = book.formats || {};
+
+  const textUrl = Object.entries(formats).find(([mime, url]) =>
+    mime.toLowerCase().startsWith("text/plain") &&
+    typeof url === "string" &&
+    !url.toLowerCase().endsWith(".zip")
+  )?.[1];
+
+  if (!textUrl) {
+    bookDownloadStatus.textContent =
+      "Este libro no tiene una versión TXT disponible.";
+    return;
+  }
+
+  loadBookTextButton.disabled = true;
+  bookDownloadStatus.textContent = "Descargando texto del libro...";
+
+  try {
+    const response = await fetch(textUrl);
+
+    if (!response.ok) {
+      throw new Error("No se pudo descargar el libro.");
+    }
+
+    const bookText = await response.text();
+
+    if (!bookText.trim()) {
+      throw new Error("El archivo de texto está vacío.");
+    }
+
+    const textArea = document.getElementById("text");
+    textArea.value = bookText;
+    textArea.dispatchEvent(new Event("input", { bubbles: true }));
+
+    bookDownloadStatus.textContent =
+      `¡Texto cargado! (${bookText.length.toLocaleString()} caracteres). Ya puedes pulsar Iniciar.`;
+
+  } catch (error) {
+    console.error("Error al descargar el libro:", error);
+
+    bookDownloadStatus.textContent =
+      "No se pudo descargar el texto. Puede ser un problema de conexión o CORS.";
+
+  } finally {
+    loadBookTextButton.disabled = false;
+  }
+});
 </script>
 </body>
 </html>
