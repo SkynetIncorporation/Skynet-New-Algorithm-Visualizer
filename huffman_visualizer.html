@@ -96,45 +96,19 @@ label.sp{display:flex;gap:8px;align-items:center;color:var(--mute);margin-left:a
 #row{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
 #row #tree{flex:1 1 420px;min-width:0}
 #out{flex:0 1 260px;min-height:96px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start}
+#stats{flex:0 1 260px;margin-bottom:16px}
+#stats h3{margin:0 0 8px;font-size:16px}
+#stats p{margin:0 0 4px;font-size:14px}
 .obox{min-width:30px;height:28px;padding:0 7px;border-radius:6px;background:var(--teal-t);color:var(--ink);box-shadow:inset 0 0 0 2px var(--teal);font:600 14px "JetBrains Mono",ui-monospace,monospace;display:flex;align-items:center;justify-content:center}
 .cbox.fixed{position:fixed;z-index:60;pointer-events:none}
 .seg{display:inline-flex;margin-bottom:12px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
 .seg button{background:transparent;color:var(--ink);border:0;border-radius:0;padding:8px 16px}
 .seg button[aria-pressed="true"]{background:var(--teal);color:var(--on-teal)}
 @media (prefers-reduced-motion:reduce){#ptr,.cell,.l,.count{transition:none}}
-
-/* Flujo visual del proyecto: Issue #13 */
-.workflow{
-  display:grid;
-  grid-template-columns:repeat(6,minmax(0,1fr));
-  gap:10px;
-  margin:0 0 22px;
-}
-.workflow-step{
-  position:relative;
-  min-height:126px;
-  padding:13px 11px;
-  border:1px solid var(--line);
-  border-radius:10px;
-  background:var(--panel);
-  display:flex;
-  flex-direction:column;
-  gap:7px;
-}
-.workflow-step.active{
-  border:2px solid var(--teal);
-  background:var(--teal-t);
-}
-.workflow-number{
-  width:28px;
-  height:28px;
-  display:grid;
-  place-items:center;
-  border-radius:50%;
-  background:var(--teal);
-  color:var(--on-teal);
-  font:600 13px "JetBrains Mono",ui-monospace,monospace;
-}
+.workflow{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin:0 0 22px}
+.workflow-step{position:relative;min-height:126px;padding:13px 11px;border:1px solid var(--line);border-radius:10px;background:var(--panel);display:flex;flex-direction:column;gap:7px}
+.workflow-step.active{border:2px solid var(--teal);background:var(--teal-t)}
+.workflow-number{width:28px;height:28px;display:grid;place-items:center;border-radius:50%;background:var(--teal);color:var(--on-teal);font:600 13px "JetBrains Mono",ui-monospace,monospace}
 .workflow-step strong{font-size:14px;line-height:1.25}
 .workflow-step span:last-child{font-size:12px;color:var(--mute);line-height:1.35}
 @media(max-width:760px){
@@ -250,36 +224,12 @@ label.sp{display:flex;gap:8px;align-items:center;color:var(--mute);margin-left:a
   <p class="sub" id="sub">Etapa 1: escribe un texto, elige un archivo .txt o busca un libro. Después pulsa Siguiente.</p>
 
   <section class="workflow" aria-label="Etapas del proceso de compresión Huffman">
-    <article class="workflow-step active">
-      <span class="workflow-number">01</span>
-      <strong>Buscar / Subir</strong>
-      <span>Seleccionar el texto que se desea comprimir.</span>
-    </article>
-    <article class="workflow-step">
-      <span class="workflow-number">02</span>
-      <strong>Analizar</strong>
-      <span>Revisar el contenido y calcular las frecuencias.</span>
-    </article>
-    <article class="workflow-step">
-      <span class="workflow-number">03</span>
-      <strong>Construir</strong>
-      <span>Visualizar la construcción del árbol de Huffman.</span>
-    </article>
-    <article class="workflow-step">
-      <span class="workflow-number">04</span>
-      <strong>Comprimir</strong>
-      <span>Generar la secuencia de bits codificada.</span>
-    </article>
-    <article class="workflow-step">
-      <span class="workflow-number">05</span>
-      <strong>Inspeccionar</strong>
-      <span>Consultar frecuencias, códigos y resultados.</span>
-    </article>
-    <article class="workflow-step">
-      <span class="workflow-number">06</span>
-      <strong>Descargar / Descomprimir</strong>
-      <span>Obtener el resultado o recuperar el texto original.</span>
-    </article>
+    <article class="workflow-step active"><span class="workflow-number">01</span><strong>Buscar / Subir</strong><span>Seleccionar el texto que se desea comprimir.</span></article>
+    <article class="workflow-step"><span class="workflow-number">02</span><strong>Analizar</strong><span>Revisar el contenido y calcular las frecuencias.</span></article>
+    <article class="workflow-step"><span class="workflow-number">03</span><strong>Construir</strong><span>Visualizar la construcción del árbol de Huffman.</span></article>
+    <article class="workflow-step"><span class="workflow-number">04</span><strong>Comprimir</strong><span>Generar la secuencia de bits codificada.</span></article>
+    <article class="workflow-step"><span class="workflow-number">05</span><strong>Inspeccionar</strong><span>Consultar frecuencias, códigos y resultados.</span></article>
+    <article class="workflow-step"><span class="workflow-number">06</span><strong>Descargar / Descomprimir</strong><span>Obtener el resultado o recuperar el texto original.</span></article>
   </section>
 
   <div class="seg" role="group" aria-label="Modo"><button id="mc" aria-pressed="true">Comprimir</button><button id="md" aria-pressed="false">Descomprimir</button></div>
@@ -328,10 +278,11 @@ label.sp{display:flex;gap:8px;align-items:center;color:var(--mute);margin-left:a
   <!-- Etapa 2: las cajas de frecuencia aparecen al pulsar Siguiente -->
   <div id="stack" class="panel" aria-label="Cajas de frecuencia"></div>
   <div id="row">
-  <div id="tree" class="panel" hidden aria-label="Nodos y árbol de Huffman">
-    <div id="tin"><svg id="arrows" width="0" height="0"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z"/></marker></defs></svg></div>
-  </div>
-  <div id="out" class="panel" hidden aria-label="Texto codificado"></div>
+    <div id="tree" class="panel" hidden aria-label="Nodos y árbol de Huffman">
+      <div id="tin"><svg id="arrows" width="0" height="0"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z"/></marker></defs></svg></div>
+    </div>
+    <div id="out" class="panel" hidden aria-label="Texto codificado"></div>
+    <div id="stats" class="panel" hidden aria-label="Estadísticas de compresión"></div>
   </div>
   <div id="view" class="panel" hidden></div>
 
@@ -339,11 +290,15 @@ label.sp{display:flex;gap:8px;align-items:center;color:var(--mute);margin-left:a
     <button id="start">Iniciar</button>
     <button id="next" disabled>Siguiente</button>
     <button id="reset" class="ghost" disabled>Reiniciar</button>
+    <button id="downloadTxt" class="ghost" disabled>Descargar .txt</button>
+    <button id="downloadSkyh" class="ghost" disabled>Descargar .skyh</button>
     <label class="sp">Velocidad <input id="speed" type="range" min="1" max="10" value="4"></label>
   </div>
   <p id="status" aria-live="polite"></p>
 </main>
 
+<!-- Biblioteca del formato binario .skyh: debe cargarse antes de instanciar HuffmanViz -->
+<script src="skyh.js"></script>
 <script>
 const CANCEL = Symbol("cancel");
 // Por encima de este número de caracteres no se anima el conteo uno por uno (p. ej. un libro completo).
@@ -352,16 +307,21 @@ const label = c => c === " " ? "␣" : c === "\n" ? "↵" : c === "\t" ? "⇥" :
 
 class HuffmanViz {
   #text; #view; #stack; #status; #start; #next; #reset; #speed; #fileInput; #fileInfo;
+  #downloadTxt; #downloadSkyh;
   #inputs; #sourceInfo; #secFile; #secBook; #secTextLabel; #steps; #loading = false;
-  #fileBytes = new Uint8Array();
+  #fileBytes = new Uint8Array(); #fileName = "";
+  // Texto completo de la última compresión (para estadísticas y descargas) y su origen.
+  #allChars = []; #srcBytes = new Uint8Array(); #srcName = "texto.txt";
   #ptr = null; #cells = []; #boxes = new Map(); #token = 0;
-  #tree; #tin; #arrows; #out; #mc; #md; #sub; #mode = "c"; #busy = false; #dActive = false; #ctext = ""; #chars = []; #codes = new Map(); #nodes = []; #queue = []; #stage = 0;
+  #tree; #tin; #arrows; #out; #stats; #mc; #md; #sub; #mode = "c"; #busy = false; #dActive = false; #ctext = ""; #chars = []; #codes = new Map(); #nodes = []; #queue = []; #stage = 0;
 
   constructor() {
     const g = id => document.getElementById(id);
     this.#text = g("text"); this.#view = g("view"); this.#stack = g("stack");
     this.#status = g("status"); this.#start = g("start"); this.#next = g("next");
     this.#reset = g("reset"); this.#speed = g("speed");
+    this.#downloadTxt = g("downloadTxt");
+    this.#downloadSkyh = g("downloadSkyh");
     this.#fileInput = g("fileInput"); this.#fileInfo = g("fileInfo");
     this.#fileInput.addEventListener("change", () => this.#loadFile());
     this.#inputs = g("inputs"); this.#sourceInfo = g("sourceInfo");
@@ -369,17 +329,21 @@ class HuffmanViz {
     this.#steps = [...document.querySelectorAll(".workflow-step")];
     // Si el usuario escribe a mano, la fuente vuelve a ser el texto escrito.
     this.#text.addEventListener("input", () => {
+      this.#fileName = "";
       if (this.#mode === "c") this.#sourceInfo.textContent = "Fuente actual: texto escrito.";
     });
     // El buscador de libros avisa mientras descarga el texto para bloquear Siguiente.
     document.addEventListener("source-loading", e => { this.#loading = e.detail; this.#sync(); });
     this.#tree = g("tree"); this.#tin = g("tin"); this.#arrows = g("arrows"); this.#out = g("out");
+    this.#stats = g("stats");
     this.#mc = g("mc"); this.#md = g("md"); this.#sub = g("sub");
     this.#mc.onclick = () => this.#setMode("c");
     this.#md.onclick = () => this.#setMode("d");
     this.#start.onclick = () => this.#run();
     this.#next.onclick = () => this.#advance();
     this.#reset.onclick = () => this.#restore();
+    this.#downloadTxt.onclick = () => this.#downloadText();
+    this.#downloadSkyh.onclick = () => this.#downloadSkyhFile();
     this.#sync();
   }
 
@@ -404,6 +368,7 @@ class HuffmanViz {
       this.#restore();
       this.#text.value = content; // el cuadro de texto se reemplaza por el contenido del archivo
       this.#ctext = content;
+      this.#fileName = file.name;
       this.#fileInfo.textContent =
         `${file.name} · ${this.#fileBytes.length.toLocaleString("es-MX")} bytes`;
       this.#sourceInfo.textContent = `Fuente actual: archivo ${file.name}.`;
@@ -413,6 +378,7 @@ class HuffmanViz {
       this.#view.hidden = true;
     } catch (error) {
       this.#fileBytes = new Uint8Array();
+      this.#fileName = "";
       this.#fileInput.value = "";
       this.#fileInfo.textContent = "No se pudo leer el archivo como texto UTF-8.";
       this.#status.textContent =
@@ -483,6 +449,12 @@ class HuffmanViz {
       this.#text.focus();
       return;
     }
+    // Se conserva el texto completo y sus bytes originales para las estadísticas y las descargas.
+    this.#allChars = all;
+    this.#srcName = this.#fileName || "texto.txt";
+    this.#srcBytes = this.#fileName && this.#fileBytes.length
+      ? this.#fileBytes
+      : new TextEncoder().encode(all.join(""));
     const big = all.length > MAX_ANIM;
     const chars = big ? all.slice(0, MAX_ANIM) : all;
     const t = ++this.#token;
@@ -590,6 +562,8 @@ class HuffmanViz {
   }
 
   #clearTree() {
+    this.#stats.hidden = true;
+    this.#stats.innerHTML = "";
     this.#nodes = []; this.#queue = []; this.#stage = 0;
     this.#tree.hidden = true;
     this.#out.hidden = true; this.#out.innerHTML = ""; this.#codes.clear();
@@ -704,6 +678,28 @@ class HuffmanViz {
     this.#status.textContent = `Árbol de Huffman completo: la raíz suma ${q[0].w}.`;
   }
 
+  // Estadísticas de compresión calculadas sobre el texto completo (no solo la parte animada).
+  #showStats() {
+    const total = this.#allChars.length;
+    let bits = 0;
+    for (const ch of this.#allChars) bits += this.#codes.get(ch)?.code.length ?? 0;
+    const original = total * 8;
+    const saved = original - bits;
+    const percentage = original > 0
+      ? ((saved / original) * 100).toFixed(2)
+      : "0.00";
+
+    this.#stats.hidden = false;
+    this.#stats.innerHTML = `
+      <h3>Estadísticas de compresión</h3>
+      <p>Caracteres originales: <strong>${total.toLocaleString("es-MX")}</strong></p>
+      <p>Tamaño original: <strong>${original.toLocaleString("es-MX")} bits</strong></p>
+      <p>Tamaño comprimido: <strong>${bits.toLocaleString("es-MX")} bits</strong></p>
+      <p>Reducción de tamaño: <strong>${percentage}%</strong></p>
+      <p>Bits ahorrados: <strong>${saved.toLocaleString("es-MX")}</strong></p>
+    `;
+  }
+
   #sync() {
     const lock = this.#busy || (this.#stage > 0 && this.#stage < 6), d = this.#mode === "d";
     this.#mc.disabled = lock; this.#md.disabled = lock;
@@ -718,6 +714,61 @@ class HuffmanViz {
     const s = this.#stage;
     const step = this.#busy && s === 0 ? 2 : s === 0 ? 1 : s <= 2 ? 2 : s <= 5 ? 3 : 4;
     this.#steps.forEach((el, i) => el.classList.toggle("active", i === step - 1));
+
+    // Las descargas solo se habilitan cuando la compresión terminó (etapa 6) y no hay animación en curso.
+    const canDownload = !this.#busy && !d && this.#stage === 6;
+    this.#downloadTxt.disabled = !canDownload;
+    this.#downloadSkyh.disabled = !canDownload;
+  }
+
+  // Bits de la parte animada (los que se ven en pantalla); se usan al pasar a "Descomprimir".
+  #getEncodedBits() {
+    return this.#chars.map(ch => this.#codes.get(ch)?.code ?? "").join("");
+  }
+
+  // Bits de todo el texto comprimido; se usan en la descarga .txt.
+  #getFullBits() {
+    return this.#allChars.map(ch => this.#codes.get(ch)?.code ?? "").join("");
+  }
+
+  #downloadFile(content, filename, type) {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  #downloadText() {
+    if (this.#stage !== 6 || this.#mode !== "c" || this.#busy) return;
+    this.#downloadFile(
+      this.#getFullBits(),
+      "texto_comprimido.txt",
+      "text/plain;charset=utf-8"
+    );
+    this.#status.textContent = "Archivo TXT descargado correctamente.";
+  }
+
+  // Genera un archivo binario .skyh válido con Skyh.escribirArchivo() (skyh.js).
+  async #downloadSkyhFile() {
+    if (this.#stage !== 6 || this.#mode !== "c" || this.#busy) return;
+    if (typeof Skyh === "undefined") {
+      this.#status.textContent = "No se pudo cargar skyh.js. Colócalo en la misma carpeta que el HTML.";
+      return;
+    }
+    try {
+      const { archivo, info } = await Skyh.escribirArchivo(this.#srcBytes, this.#srcName);
+      Skyh.descargar(archivo, Skyh.nombreSkyh(this.#srcName));
+      this.#status.textContent =
+        `Archivo SKYH descargado correctamente: ${info.metricas.textoOriginal} → ${info.metricas.textoComprimido}.`;
+    } catch (error) {
+      console.error("Error al generar el archivo .skyh:", error);
+      this.#status.textContent = "No se pudo generar el archivo .skyh: " + (error.message || error);
+    }
   }
 
   #cleanD() {
@@ -740,7 +791,7 @@ class HuffmanViz {
     if (m === "d") {
       this.#ctext = this.#text.value;
       const ready = this.#stage === 6;
-      this.#text.value = ready ? this.#chars.map(c => this.#codes.get(c)?.code ?? "").join("") : "";
+      this.#text.value = ready ? this.#getEncodedBits() : "";
       this.#text.placeholder = "Escribe una secuencia de 0 y 1";
       this.#text.setAttribute("aria-label", "Secuencia binaria a decodificar");
       this.#sub.textContent = "Escribe una secuencia de 0 y 1 y observa cómo el árbol la convierte en texto.";
@@ -921,6 +972,7 @@ class HuffmanViz {
       bits += code.length;
     }
     this.#status.textContent = `Texto codificado: ${bits} bits en lugar de ${n * 8} (8 bits por carácter).`;
+    this.#showStats();
   }
 
   async #codePhase(t) {
