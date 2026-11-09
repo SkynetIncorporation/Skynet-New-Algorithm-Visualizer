@@ -96,9 +96,46 @@ label.sp{display:flex;gap:8px;align-items:center;color:var(--mute);margin-left:a
 #row{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap}
 #row #tree{flex:1 1 420px;min-width:0}
 #out{flex:0 1 260px;min-height:96px;margin-bottom:16px;display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start}
-#stats{flex:0 1 260px;margin-bottom:16px}
-#stats h3{margin:0 0 8px;font-size:16px}
-#stats p{margin:0 0 4px;font-size:14px}
+/* Etapa 5 · Inspector del archivo .skyh (sección 7 de la actividad · issue #32) */
+#insp{margin-bottom:16px;padding:16px}
+#insp h2{margin:0 0 10px;font-size:19px}
+#insp h3{margin:22px 0 8px;font-size:16px}
+#insp .muted{color:var(--mute);margin:0 0 8px;font-size:14px}
+#inspLoad{margin-bottom:6px}
+.insp-dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 16px;margin:0;font-size:14px}
+.insp-dl dt{color:var(--mute)}
+.insp-dl dd{margin:0;overflow-wrap:anywhere}
+.insp-dl code,.hash,#insp pre{font:400 13px/1.5 "JetBrains Mono",ui-monospace,monospace}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);display:flex;flex-direction:column;gap:2px}
+.stat .k{font-size:12px;color:var(--mute)}
+.stat strong{font:600 18px "JetBrains Mono",ui-monospace,monospace;overflow-wrap:anywhere}
+.stat small{font-size:12px;color:var(--mute)}
+.stat.hl{border-color:var(--teal);background:var(--teal-t)}
+.tbl-scroll{overflow:auto;max-height:340px;border:1px solid var(--line);border-radius:8px}
+#insp table{border-collapse:collapse;width:100%;font-size:13px}
+#insp th,#insp td{padding:5px 10px;text-align:left;border-bottom:1px solid var(--line)}
+#insp th{background:var(--panel);color:var(--mute);font-weight:600}
+.tbl-scroll th{position:sticky;top:0;z-index:1}
+#insp td.sym,#insp td.code{font:600 13px "JetBrains Mono",ui-monospace,monospace}
+#insp td.code{word-break:break-all;color:var(--teal)}
+#insp tfoot td{font-weight:600}
+#insp pre{margin:0 0 8px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);overflow:auto;white-space:pre-wrap;word-break:break-all}
+.tree-scroll{overflow:auto;max-height:520px;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--bg)}
+.tn-edge{stroke:var(--mute);stroke-width:1.5}
+.tn-bitbg{fill:var(--panel);stroke:var(--amber);stroke-width:1.5}
+.tn-bit{font:600 11px "JetBrains Mono",ui-monospace,monospace;fill:var(--ink)}
+.tn-leaf{fill:var(--teal-t);stroke:var(--teal);stroke-width:2}
+.tn-int{fill:var(--panel);stroke:var(--mute);stroke-width:2}
+.tn-sym{font:600 13px "JetBrains Mono",ui-monospace,monospace;fill:var(--ink)}
+.tn-w{font:600 11px "JetBrains Mono",ui-monospace,monospace;fill:var(--ink)}
+.tn-freq{font:10px "JetBrains Mono",ui-monospace,monospace;fill:var(--mute)}
+.verdict{margin:10px 0;padding:10px 12px;border-radius:8px;font-weight:600}
+.verdict.ok{background:var(--teal-t);border:2px solid var(--teal)}
+.verdict.bad{background:#fde2e0;color:#7a1410;border:2px solid #c0332b}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .verdict.bad{background:#4a1f1c;color:#ffd6d2}}
+:root[data-theme="dark"] .verdict.bad{background:#4a1f1c;color:#ffd6d2}
+#inspResult textarea{min-height:200px}
 .obox{min-width:30px;height:28px;padding:0 7px;border-radius:6px;background:var(--teal-t);color:var(--ink);box-shadow:inset 0 0 0 2px var(--teal);font:600 14px "JetBrains Mono",ui-monospace,monospace;display:flex;align-items:center;justify-content:center}
 .cbox.fixed{position:fixed;z-index:60;pointer-events:none}
 .seg{display:inline-flex;margin-bottom:12px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
@@ -232,7 +269,7 @@ label.sp{display:flex;gap:8px;align-items:center;color:var(--mute);margin-left:a
     <article class="workflow-step"><span class="workflow-number">06</span><strong>Descargar / Descomprimir</strong><span>Obtener el resultado o recuperar el texto original.</span></article>
   </section>
 
-  <div class="seg" role="group" aria-label="Modo"><button id="mc" aria-pressed="true">Comprimir</button><button id="md" aria-pressed="false">Descomprimir</button></div>
+  <div class="seg" role="group" aria-label="Modo"><button id="mc" aria-pressed="true">Comprimir</button><button id="md" aria-pressed="false">Descomprimir</button><button id="mi" aria-pressed="false">Inspeccionar .skyh</button></div>
 
   <!-- Etapa 1: tres fuentes de entrada, cada una en su propia sección -->
   <div id="inputs">
@@ -282,9 +319,19 @@ label.sp{display:flex;gap:8px;align-items:center;color:var(--mute);margin-left:a
       <div id="tin"><svg id="arrows" width="0" height="0"><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z"/></marker></defs></svg></div>
     </div>
     <div id="out" class="panel" hidden aria-label="Texto codificado"></div>
-    <div id="stats" class="panel" hidden aria-label="Estadísticas de compresión"></div>
   </div>
   <div id="view" class="panel" hidden></div>
+
+  <!-- Etapa 5: Inspector del archivo .skyh (estadísticas de compresión + estructura interna) -->
+  <section id="insp" class="panel" aria-labelledby="insp-title" hidden>
+    <h2 id="insp-title"><span class="tag">05</span> Inspector del archivo .skyh</h2>
+    <div id="inspLoad" class="file-picker" hidden>
+      <label for="skyhInput">Cargar archivo comprimido (.skyh)</label>
+      <input id="skyhInput" type="file" accept=".skyh">
+      <span id="skyhInfo" class="file-info" aria-live="polite">No se ha seleccionado ningún archivo.</span>
+    </div>
+    <div id="inspBody"></div>
+  </section>
 
   <div class="bar">
     <button id="start">Iniciar</button>
@@ -304,6 +351,8 @@ const CANCEL = Symbol("cancel");
 // Por encima de este número de caracteres no se anima el conteo uno por uno (p. ej. un libro completo).
 const MAX_ANIM = 1500;
 const label = c => c === " " ? "␣" : c === "\n" ? "↵" : c === "\t" ? "⇥" : c;
+const fmt = n => n.toLocaleString("es-MX");
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
 class HuffmanViz {
   #text; #view; #stack; #status; #start; #next; #reset; #speed; #fileInput; #fileInfo;
@@ -313,7 +362,7 @@ class HuffmanViz {
   // Texto completo de la última compresión (para estadísticas y descargas) y su origen.
   #allChars = []; #srcBytes = new Uint8Array(); #srcName = "texto.txt";
   #ptr = null; #cells = []; #boxes = new Map(); #token = 0;
-  #tree; #tin; #arrows; #out; #stats; #mc; #md; #sub; #mode = "c"; #busy = false; #dActive = false; #ctext = ""; #chars = []; #codes = new Map(); #nodes = []; #queue = []; #stage = 0;
+  #tree; #tin; #arrows; #out; #mc; #md; #mi; #sub; #row; #insp; #inspBody; #inspLoad; #skyhInput; #skyhInfo; #genInfo = null; #loadInfo = null; #mode = "c"; #busy = false; #dActive = false; #ctext = ""; #chars = []; #codes = new Map(); #nodes = []; #queue = []; #stage = 0;
 
   constructor() {
     const g = id => document.getElementById(id);
@@ -335,10 +384,13 @@ class HuffmanViz {
     // El buscador de libros avisa mientras descarga el texto para bloquear Siguiente.
     document.addEventListener("source-loading", e => { this.#loading = e.detail; this.#sync(); });
     this.#tree = g("tree"); this.#tin = g("tin"); this.#arrows = g("arrows"); this.#out = g("out");
-    this.#stats = g("stats");
-    this.#mc = g("mc"); this.#md = g("md"); this.#sub = g("sub");
+    this.#mc = g("mc"); this.#md = g("md"); this.#mi = g("mi"); this.#sub = g("sub");
     this.#mc.onclick = () => this.#setMode("c");
     this.#md.onclick = () => this.#setMode("d");
+    this.#mi.onclick = () => this.#setMode("i");
+    this.#row = g("row"); this.#insp = g("insp"); this.#inspBody = g("inspBody"); this.#inspLoad = g("inspLoad");
+    this.#skyhInput = g("skyhInput"); this.#skyhInfo = g("skyhInfo");
+    this.#skyhInput.addEventListener("change", () => this.#loadSkyh());
     this.#start.onclick = () => this.#run();
     this.#next.onclick = () => this.#advance();
     this.#reset.onclick = () => this.#restore();
@@ -562,8 +614,8 @@ class HuffmanViz {
   }
 
   #clearTree() {
-    this.#stats.hidden = true;
-    this.#stats.innerHTML = "";
+    this.#genInfo = null;
+    this.#insp.hidden = true; this.#inspBody.innerHTML = "";
     this.#nodes = []; this.#queue = []; this.#stage = 0;
     this.#tree.hidden = true;
     this.#out.hidden = true; this.#out.innerHTML = ""; this.#codes.clear();
@@ -678,45 +730,253 @@ class HuffmanViz {
     this.#status.textContent = `Árbol de Huffman completo: la raíz suma ${q[0].w}.`;
   }
 
-  // Estadísticas de compresión calculadas sobre el texto completo (no solo la parte animada).
-  #showStats() {
-    const total = this.#allChars.length;
-    let bits = 0;
-    for (const ch of this.#allChars) bits += this.#codes.get(ch)?.code.length ?? 0;
-    const original = total * 8;
-    const saved = original - bits;
-    const percentage = original > 0
-      ? ((saved / original) * 100).toFixed(2)
-      : "0.00";
+  // ===================================================================
+  // Etapa 5 · INSPECTOR del archivo .skyh (sección 7 de la actividad · issue #32)
+  // Muestra la estructura interna del archivo comprimido. Descomprimir es una acción explícita.
+  // ===================================================================
+  async #inspectPhase(t) {
+    if (typeof Skyh === "undefined") {
+      this.#stage = 6;
+      this.#status.textContent = "No se pudo cargar skyh.js. Colócalo en la misma carpeta que el HTML.";
+      return;
+    }
+    this.#status.textContent = "Etapa 5: generando el archivo .skyh para inspeccionarlo…";
+    try {
+      const { info } = await Skyh.escribirArchivo(this.#srcBytes, this.#srcName);
+      if (t !== this.#token) return;
+      this.#genInfo = info;
+      this.#renderInspector();
+      this.#insp.hidden = false;
+      this.#insp.scrollIntoView({ block: "start" });
+      this.#status.textContent = "Etapa 5: inspecciona el archivo .skyh. Después puedes descargarlo o descomprimirlo (etapa 6).";
+    } catch (error) {
+      console.error("Error al generar el archivo .skyh:", error);
+      this.#stage = 6;
+      this.#status.textContent = "No se pudo generar el archivo .skyh: " + (error.message || error);
+    }
+  }
 
-    this.#stats.hidden = false;
-    this.#stats.innerHTML = `
-      <h3>Estadísticas de compresión</h3>
-      <p>Caracteres originales: <strong>${total.toLocaleString("es-MX")}</strong></p>
-      <p>Tamaño original: <strong>${original.toLocaleString("es-MX")} bits</strong></p>
-      <p>Tamaño comprimido: <strong>${bits.toLocaleString("es-MX")} bits</strong></p>
-      <p>Reducción de tamaño: <strong>${percentage}%</strong></p>
-      <p>Bits ahorrados: <strong>${saved.toLocaleString("es-MX")}</strong></p>
-    `;
+  // Modo "Inspeccionar .skyh": se carga únicamente el archivo comprimido (sin el .txt original).
+  async #loadSkyh() {
+    const file = this.#skyhInput.files?.[0];
+    if (!file) return;
+    this.#loadInfo = null;
+    if (typeof Skyh === "undefined") {
+      this.#skyhInfo.textContent = "No se pudo cargar skyh.js.";
+      return;
+    }
+    this.#skyhInfo.textContent = `Leyendo ${file.name}…`;
+    try {
+      this.#loadInfo = await Skyh.leerArchivo(file, file.name);
+      this.#skyhInfo.textContent = `Archivo cargado: ${file.name} (${Skyh.formatearTamano(file.size)}).`;
+      this.#status.textContent = "Archivo .skyh válido. Examina su estructura y pulsa DESCOMPRIMIR para recuperar el texto.";
+      this.#renderInspector();
+    } catch (error) {
+      const msg = error?.name === "SkyhError" ? error.message : "No se pudo leer el archivo: " + (error?.message || error);
+      this.#skyhInfo.textContent = `No se pudo abrir ${file.name}.`;
+      this.#inspBody.innerHTML = `<p class="verdict bad" role="alert">✘ Archivo .skyh no válido: ${esc(msg)}</p>`;
+      this.#status.textContent = "El archivo no pasó la validación del formato .skyh.";
+    }
+    this.#sync();
+  }
+
+  #renderInspector() {
+    const body = this.#inspBody, info = this.#mode === "i" ? this.#loadInfo : this.#genInfo;
+    if (!info) {
+      body.innerHTML = this.#mode === "i"
+        ? '<p class="muted">Carga un archivo .skyh para ver su estructura. No hace falta el .txt original.</p>'
+        : "";
+      return;
+    }
+    const S = Skyh, m = info.metricas, n = info.numSimbolos, o = info.offsets;
+    const nombre = info.nombreArchivo || S.nombreSkyh(info.nombreOriginal);
+    const ext = /\.[^.]*$/.exec(nombre)?.[0] || "(sin extensión)";
+    const bytesDatos = info.datos.length;
+    const bytesNombre = o.tabla - o.nombre, bytesTabla = o.datos - o.tabla;
+    const bitsPorSimbolo = info.tamanoOriginal > 0 ? (info.totalBits / info.tamanoOriginal).toFixed(3) : "0.000";
+    const pctDe = f => info.tamanoOriginal > 0 ? ((f / info.tamanoOriginal) * 100).toFixed(2) : "0.00";
+    const hex = b => "0x" + b.toString(16).toUpperCase().padStart(2, "0");
+
+    // Tabla de frecuencias + códigos reconstruidos (más frecuentes primero).
+    const filas = info.tabla
+      .map(({ simbolo, frecuencia }) => ({ simbolo, frecuencia, codigo: info.codigos.get(simbolo) }))
+      .sort((a, b) => b.frecuencia - a.frecuencia || a.simbolo - b.simbolo);
+    const filasHtml = filas.map(({ simbolo, frecuencia, codigo }) => `<tr>
+        <td class="sym">${esc(S.etiquetaSimbolo(simbolo))}</td><td>${hex(simbolo)} (${simbolo})</td>
+        <td>${fmt(frecuencia)}</td><td>${pctDe(frecuencia)} %</td>
+        <td class="code">${codigo}</td><td>${codigo.length}</td><td>${fmt(frecuencia * codigo.length)}</td></tr>`).join("");
+    const tablaHtml = n === 0
+      ? '<p class="muted">Archivo vacío: la tabla no tiene entradas (N = 0).</p>'
+      : `<div class="tbl-scroll"><table>
+          <thead><tr><th>Símbolo</th><th>Byte</th><th>Frecuencia</th><th>% del total</th><th>Código Huffman</th><th>Long.</th><th>Bits totales</th></tr></thead>
+          <tbody>${filasHtml}</tbody>
+          <tfoot><tr><td colspan="2">Total (${n} símbolos)</td><td>${fmt(info.tamanoOriginal)}</td><td>100 %</td><td></td><td></td><td>${fmt(info.totalBits)}</td></tr></tfoot>
+        </table></div>`;
+
+    // Vista parcial legible de los datos comprimidos.
+    const v = S.vistaPreviaDatos(info, 32);
+    const datosHtml = v.bytesMostrados === 0
+      ? '<p class="muted">Sin datos comprimidos (archivo vacío).</p>'
+      : `<p class="muted">Primeros ${v.bytesMostrados} de ${fmt(v.bytesTotales)} bytes de la sección de datos${v.truncado ? " (vista parcial)" : ""}. Los bits se empaquetan comenzando por el más significativo (MSB).</p>
+         <p class="muted">Hexadecimal</p><pre aria-label="Datos comprimidos en hexadecimal">${v.hex}</pre>
+         <p class="muted">Bits</p><pre aria-label="Datos comprimidos en bits">${v.bits}</pre>`;
+
+    const ahorroNegativo = m.ahorro < 0;
+    body.innerHTML = `
+      <h3>Archivo y formato</h3>
+      <dl class="insp-dl">
+        <dt>Nombre</dt><dd>${esc(nombre)}</dd>
+        <dt>Extensión</dt><dd>${esc(ext)}</dd>
+        <dt>Formato / versión</dt><dd>SKYH v${info.version} <code>(magic 53 4B 59 48)</code></dd>
+        <dt>Flags</dt><dd>${info.flags} (reservado)</dd>
+        <dt>Nombre original guardado</dt><dd>${esc(info.nombreOriginal || "(sin nombre)")}</dd>
+        <dt>SHA-256 del original</dt><dd><code class="hash">${info.hashHex}</code></dd>
+      </dl>
+
+      <h3 id="stats">Estadísticas de compresión</h3>
+      <div class="stat-grid">
+        <div class="stat"><span class="k">Tamaño original</span><strong>${m.textoOriginal}</strong><small>${fmt(m.tamanoOriginal)} bytes</small></div>
+        <div class="stat"><span class="k">Tamaño comprimido (.skyh)</span><strong>${m.textoComprimido}</strong><small>${fmt(m.tamanoComprimido)} bytes</small></div>
+        <div class="stat hl"><span class="k">Ahorro</span><strong>${m.textoAhorro}</strong><small>${fmt(m.ahorro)} bytes</small></div>
+        <div class="stat hl"><span class="k">Reducción</span><strong>${m.porcentajeReduccion.toFixed(2)} %</strong><small>razón ${m.razonCompresion.toFixed(3)}:1</small></div>
+        <div class="stat"><span class="k">Símbolos distintos</span><strong>${n}</strong><small>entradas de la tabla</small></div>
+        <div class="stat"><span class="k">Bits codificados</span><strong>${fmt(info.totalBits)}</strong><small>${bitsPorSimbolo} bits por símbolo (vs 8)</small></div>
+      </div>
+      ${ahorroNegativo ? '<p class="muted">El .skyh pesa más que el original: el header (48 B), el nombre y la tabla de frecuencias (N × 5 B) cuestan más que lo que ahorra Huffman. Es normal en textos muy pequeños.</p>' : ""}
+
+      <h3>Estructura interna del archivo</h3>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>Región</th><th>Offset</th><th>Bytes</th><th>Contenido</th></tr></thead>
+        <tbody>
+          <tr><td>Header fijo</td><td>0</td><td>${S.TAM_HEADER}</td><td>magic, versión, flags, tamaño original, bits válidos, N y SHA-256</td></tr>
+          <tr><td>Nombre</td><td>${o.nombre}</td><td>${bytesNombre}</td><td>longitud (1 B) + nombre UTF-8</td></tr>
+          <tr><td>Tabla de frecuencias</td><td>${o.tabla}</td><td>${fmt(bytesTabla)}</td><td>${n} × 5 B: símbolo (1 B) + frecuencia (4 B)</td></tr>
+          <tr><td>Datos comprimidos</td><td>${fmt(o.datos)}</td><td>${fmt(bytesDatos)}</td><td>${fmt(info.totalBits)} bits válidos + ${info.bitsRelleno} bits de relleno en cero</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="2">Total</td><td>${fmt(m.tamanoComprimido)}</td><td>Sobrecarga (header + nombre + tabla): ${fmt(o.datos)} B</td></tr></tfoot>
+      </table></div>
+
+      <h3>Tabla de frecuencias y códigos Huffman</h3>
+      <p class="muted">Códigos reconstruidos a partir de la tabla de frecuencias almacenada (el .skyh guarda frecuencias, no el árbol).</p>
+      ${tablaHtml}
+
+      <h3>Árbol de Huffman reconstruido</h3>
+      <p class="muted">Rama izquierda = 0, rama derecha = 1. Las hojas muestran el símbolo y su frecuencia.</p>
+      ${this.#treeSvg(info.raiz)}
+
+      <h3>Datos comprimidos</h3>
+      ${datosHtml}
+
+      <h3>Descomprimir</h3>
+      <p class="muted">La descompresión recorre el árbol bit por bit y verifica el SHA-256 contra el del header.</p>
+      <div class="bar"><button id="inspDecomp">DESCOMPRIMIR</button></div>
+      <div id="inspResult" aria-live="polite"></div>`;
+    body.querySelector("#inspDecomp").onclick = () => this.#inspDecompress(info);
+  }
+
+  // Árbol reconstruido (nodos de skyh.js) dibujado como SVG; las hojas quedan alineadas en el eje X.
+  #treeSvg(raiz) {
+    if (!raiz) return '<p class="muted">Árbol vacío: el archivo no tiene símbolos.</p>';
+    const GX = 38, GY = 60, PAD = 28, OFF = PAD + 8, pos = new Map();
+    const compacto = x => x >= 1e6 ? (x / 1e6).toFixed(1) + "M" : x >= 1e3 ? (x / 1e3).toFixed(1) + "k" : String(x);
+    let hojas = 0, prof = 0;
+    const colocar = (nodo, d) => {
+      prof = Math.max(prof, d);
+      if (!nodo.izq) { pos.set(nodo, { x: hojas++ * GX, d }); return; }
+      colocar(nodo.izq, d + 1); colocar(nodo.der, d + 1);
+      pos.set(nodo, { x: (pos.get(nodo.izq).x + pos.get(nodo.der).x) / 2, d });
+    };
+    colocar(raiz, 0);
+    const W = (hojas - 1) * GX + OFF * 2, H = prof * GY + PAD * 2 + 22;
+    let aristas = "", nodos = "";
+    const dibujar = (nodo, codigo) => {
+      const { x, d } = pos.get(nodo), cx = x + OFF, cy = d * GY + PAD;
+      if (!nodo.izq) {
+        nodos += `<g><title>símbolo ${esc(Skyh.etiquetaSimbolo(nodo.simbolo))} · frecuencia ${fmt(nodo.frecuencia)} · código ${codigo || "0"}</title>
+          <rect class="tn-leaf" x="${cx - 16}" y="${cy - 13}" width="32" height="26" rx="6"/>
+          <text class="tn-sym" x="${cx}" y="${cy + 5}" text-anchor="middle">${esc(Skyh.etiquetaSimbolo(nodo.simbolo))}</text>
+          <text class="tn-freq" x="${cx}" y="${cy + 28}" text-anchor="middle">${compacto(nodo.frecuencia)}</text></g>`;
+        return;
+      }
+      for (const [hijo, bit] of [[nodo.izq, "0"], [nodo.der, "1"]]) {
+        const p = pos.get(hijo), hx = p.x + OFF, hy = p.d * GY + PAD;
+        const mx = cx + (hx - cx) * 0.5, my = cy + (hy - cy) * 0.5;
+        aristas += `<line class="tn-edge" x1="${cx}" y1="${cy}" x2="${hx}" y2="${hy}"/>
+          <circle class="tn-bitbg" cx="${mx}" cy="${my}" r="8"/><text class="tn-bit" x="${mx}" y="${my + 4}" text-anchor="middle">${bit}</text>`;
+        dibujar(hijo, codigo + bit);
+      }
+      const w = Math.max(30, compacto(nodo.frecuencia).length * 7 + 14);
+      nodos += `<g><title>nodo interno · suma ${fmt(nodo.frecuencia)}</title>
+        <rect class="tn-int" x="${cx - w / 2}" y="${cy - 13}" width="${w}" height="26" rx="13"/>
+        <text class="tn-w" x="${cx}" y="${cy + 4}" text-anchor="middle">${compacto(nodo.frecuencia)}</text></g>`;
+    };
+    dibujar(raiz, "");
+    return `<div class="tree-scroll"><svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Árbol de Huffman reconstruido">${aristas}${nodos}</svg></div>`;
+  }
+
+  // Descompresión explícita desde el inspector: muestra el texto, el veredicto del SHA-256 y permite descargarlo.
+  async #inspDecompress(info) {
+    const btn = this.#inspBody.querySelector("#inspDecomp"), out = this.#inspBody.querySelector("#inspResult");
+    btn.disabled = true;
+    out.innerHTML = '<p class="muted">Descomprimiendo…</p>';
+    try {
+      const r = await Skyh.descomprimir(info);
+      const texto = Skyh.bytesATexto(r.bytes), LIM = 200000, cortado = texto.length > LIM;
+      out.innerHTML = `
+        <p class="verdict ${r.integro ? "ok" : "bad"}" role="status">${r.integro
+          ? "✔ Idéntico: el SHA-256 del texto recuperado coincide con el almacenado en el header."
+          : "✘ Corrupto: el SHA-256 del texto recuperado NO coincide con el almacenado en el header."}</p>
+        <dl class="insp-dl">
+          <dt>SHA-256 almacenado</dt><dd><code class="hash">${info.hashHex}</code></dd>
+          <dt>SHA-256 recuperado</dt><dd><code class="hash">${r.hashCalculado}</code></dd>
+          <dt>Bytes recuperados</dt><dd>${fmt(r.bytes.length)}</dd>
+        </dl>
+        <h3>Texto recuperado</h3>
+        ${cortado ? `<p class="muted">Vista parcial: primeros ${fmt(LIM)} de ${fmt(texto.length)} caracteres. La descarga contiene el texto completo.</p>` : ""}
+        <textarea id="inspText" readonly aria-label="Texto recuperado"></textarea>
+        <div class="bar"><button id="inspDownload" class="ghost">Descargar .txt</button></div>`;
+      out.querySelector("#inspText").value = cortado ? texto.slice(0, LIM) : texto;
+      out.querySelector("#inspDownload").onclick = () => {
+        const base = (info.nombreOriginal || "texto.txt").replace(/\.[^.]*$/, "") || "texto";
+        Skyh.descargar(r.bytes, `recuperado_${base}.txt`, "text/plain;charset=utf-8");
+        this.#status.textContent = "Texto recuperado descargado como .txt.";
+      };
+      this.#status.textContent = r.integro
+        ? "Descompresión correcta: el SHA-256 coincide (idéntico)."
+        : "Atención: el SHA-256 no coincide (corrupto).";
+    } catch (error) {
+      out.innerHTML = `<p class="verdict bad" role="alert">✘ No se pudo descomprimir: ${esc(error?.message || error)}</p>`;
+    } finally {
+      btn.disabled = false;
+    }
   }
 
   #sync() {
-    const lock = this.#busy || (this.#stage > 0 && this.#stage < 6), d = this.#mode === "d";
-    this.#mc.disabled = lock; this.#md.disabled = lock;
-    this.#fileInput.disabled = lock || d;
+    const lock = this.#busy || (this.#stage > 0 && this.#stage < 6), d = this.#mode === "d", ins = this.#mode === "i";
+    this.#mc.disabled = lock; this.#md.disabled = lock; this.#mi.disabled = lock;
+    this.#fileInput.disabled = lock || d || ins;
     this.#start.hidden = !d; // en modo comprimir se avanza solo con Siguiente
-    this.#start.disabled = this.#busy || (!d && this.#stage > 0 && this.#stage < 6);
-    this.#reset.disabled = !(this.#busy || (d ? this.#dActive : this.#stage > 0));
+    this.#start.disabled = this.#busy || (!d && !ins && this.#stage > 0 && this.#stage < 6);
+    this.#reset.disabled = ins ? !this.#loadInfo : !(this.#busy || (d ? this.#dActive : this.#stage > 0));
     this.#secFile.hidden = d; this.#secBook.hidden = d;
-    if (d) this.#next.disabled = true;
-    else if (!this.#busy && this.#stage === 0) this.#next.disabled = this.#loading;
-    // Resalta la etapa del flujo en la que estamos.
+    if (d || ins) this.#next.disabled = true;
+    else if (!this.#busy) {
+      if (this.#stage === 0) this.#next.disabled = this.#loading;
+      else if (this.#stage === 6) this.#next.disabled = false; // siguiente: etapa 5 (inspector)
+      else if (this.#stage === 7) this.#next.disabled = true;
+    }
+    // Resalta la etapa del flujo en la que estamos (la 5 es el Inspector).
     const s = this.#stage;
-    const step = this.#busy && s === 0 ? 2 : s === 0 ? 1 : s <= 2 ? 2 : s <= 5 ? 3 : 4;
+    const step = ins ? 5 : this.#busy && s === 0 ? 2 : s === 0 ? 1 : s <= 2 ? 2 : s <= 5 ? 3 : s === 6 ? 4 : 5;
     this.#steps.forEach((el, i) => el.classList.toggle("active", i === step - 1));
 
-    // Las descargas solo se habilitan cuando la compresión terminó (etapa 6) y no hay animación en curso.
-    const canDownload = !this.#busy && !d && this.#stage === 6;
+    // El inspector (con las estadísticas de compresión) solo aparece en la etapa 5.
+    this.#stack.hidden = ins; this.#row.hidden = ins;
+    this.#inspLoad.hidden = !ins;
+    this.#insp.hidden = !(ins || (this.#mode === "c" && s === 7 && this.#genInfo));
+
+    // Las descargas se habilitan cuando la compresión terminó (etapas 6 y 7) y no hay animación en curso.
+    const canDownload = !this.#busy && this.#mode === "c" && this.#stage >= 6;
     this.#downloadTxt.disabled = !canDownload;
     this.#downloadSkyh.disabled = !canDownload;
   }
@@ -744,7 +1004,7 @@ class HuffmanViz {
   }
 
   #downloadText() {
-    if (this.#stage !== 6 || this.#mode !== "c" || this.#busy) return;
+    if (this.#stage < 6 || this.#mode !== "c" || this.#busy) return;
     this.#downloadFile(
       this.#getFullBits(),
       "texto_comprimido.txt",
@@ -755,7 +1015,7 @@ class HuffmanViz {
 
   // Genera un archivo binario .skyh válido con Skyh.escribirArchivo() (skyh.js).
   async #downloadSkyhFile() {
-    if (this.#stage !== 6 || this.#mode !== "c" || this.#busy) return;
+    if (this.#stage < 6 || this.#mode !== "c" || this.#busy) return;
     if (typeof Skyh === "undefined") {
       this.#status.textContent = "No se pudo cargar skyh.js. Colócalo en la misma carpeta que el HTML.";
       return;
@@ -780,34 +1040,38 @@ class HuffmanViz {
   #setMode(m) {
     if (m === this.#mode) return;
     this.#cleanD();
+    if (this.#mode === "d") this.#text.value = this.#ctext; // al salir de Descomprimir vuelve el texto original
     this.#mode = m;
     this.#mc.setAttribute("aria-pressed", m === "c");
     this.#md.setAttribute("aria-pressed", m === "d");
+    this.#mi.setAttribute("aria-pressed", m === "i");
     this.#view.hidden = true;
-    this.#inputs.hidden = false;
+    this.#inputs.hidden = m === "i";
     this.#next.disabled = true;
     this.#secTextLabel.textContent = m === "d" ? "Secuencia binaria" : "Escribir texto";
     this.#sourceInfo.hidden = m === "d";
     if (m === "d") {
       this.#ctext = this.#text.value;
-      const ready = this.#stage === 6;
+      const ready = this.#stage >= 6;
       this.#text.value = ready ? this.#getEncodedBits() : "";
       this.#text.placeholder = "Escribe una secuencia de 0 y 1";
       this.#text.setAttribute("aria-label", "Secuencia binaria a decodificar");
       this.#sub.textContent = "Escribe una secuencia de 0 y 1 y observa cómo el árbol la convierte en texto.";
       this.#status.textContent = ready ? "" : "Primero comprime un texto para construir el árbol.";
     } else {
-      this.#text.value = this.#ctext;
       this.#text.placeholder = "";
       this.#text.setAttribute("aria-label", "Texto a analizar");
-      this.#sub.textContent = "Etapa 1: escribe un texto, elige un archivo .txt o busca un libro. Después pulsa Siguiente.";
+      this.#sub.textContent = m === "i"
+        ? "Etapa 5: carga un archivo .skyh (sin el .txt original), examina su estructura y descomprímelo."
+        : "Etapa 1: escribe un texto, elige un archivo .txt o busca un libro. Después pulsa Siguiente.";
       this.#status.textContent = "";
+      this.#renderInspector();
     }
     this.#sync();
   }
 
   async #runDecomp() {
-    if (this.#stage !== 6) { this.#status.textContent = "Primero comprime un texto para construir el árbol."; return; }
+    if (this.#stage < 6) { this.#status.textContent = "Primero comprime un texto para construir el árbol."; return; }
     const raw = this.#text.value.replace(/\s+/g, "");
     if (!raw) { this.#status.textContent = "Escribe una secuencia de 0 y 1 para empezar."; this.#text.focus(); return; }
     if (/[^01]/.test(raw)) { this.#status.textContent = "Solo se admiten los caracteres 0 y 1."; return; }
@@ -971,8 +1235,7 @@ class HuffmanViz {
       cell.classList.add("seen");
       bits += code.length;
     }
-    this.#status.textContent = `Texto codificado: ${bits} bits en lugar de ${n * 8} (8 bits por carácter).`;
-    this.#showStats();
+    this.#status.textContent = `Texto codificado: ${bits} bits en lugar de ${n * 8} (8 bits por carácter). Pulsa Siguiente para inspeccionar el archivo .skyh (etapa 5).`;
   }
 
   async #codePhase(t) {
@@ -1055,6 +1318,9 @@ class HuffmanViz {
       } else if (this.#stage === 5) {
         this.#stage = 6;
         await this.#composePhase(t);
+      } else if (this.#stage === 6) {
+        this.#stage = 7; // Etapa 5 del flujo: Inspector
+        await this.#inspectPhase(t);
       }
     } catch (e) {
       if (e !== CANCEL) throw e;
@@ -1065,6 +1331,14 @@ class HuffmanViz {
 
   #restore() {
     if (this.#mode === "d") return this.#restoreDecomp();
+    if (this.#mode === "i") {
+      this.#loadInfo = null;
+      this.#skyhInput.value = "";
+      this.#skyhInfo.textContent = "No se ha seleccionado ningún archivo.";
+      this.#status.textContent = "";
+      this.#renderInspector();
+      return this.#sync();
+    }
     this.#busy = false;
     this.#token++;
     document.querySelectorAll(".fly").forEach(n => n.remove());
