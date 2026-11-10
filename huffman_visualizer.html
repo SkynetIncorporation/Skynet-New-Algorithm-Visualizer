@@ -362,6 +362,8 @@ class HuffmanViz {
   // Texto completo de la última compresión (para estadísticas y descargas) y su origen.
   #allChars = []; #srcBytes = new Uint8Array(); #srcName = "texto.txt";
   #ptr = null; #cells = []; #boxes = new Map(); #token = 0;
+  // Saltar animación: #skip adelanta la animación en curso hasta su estado final; #waiters son las esperas pendientes.
+  #skip = false; #skippable = false; #waiters = new Set();
   #tree; #tin; #arrows; #out; #mc; #md; #mi; #sub; #row; #insp; #inspBody; #inspLoad; #skyhInput; #skyhInfo; #genInfo = null; #loadInfo = null; #mode = "c"; #busy = false; #dActive = false; #ctext = ""; #chars = []; #codes = new Map(); #nodes = []; #queue = []; #stage = 0;
 
   constructor() {
@@ -392,7 +394,7 @@ class HuffmanViz {
     this.#skyhInput = g("skyhInput"); this.#skyhInfo = g("skyhInfo");
     this.#skyhInput.addEventListener("change", () => this.#loadSkyh());
     this.#start.onclick = () => this.#run();
-    this.#next.onclick = () => this.#advance();
+    this.#next.onclick = () => this.#onNext();
     this.#reset.onclick = () => this.#restore();
     this.#downloadTxt.onclick = () => this.#downloadText();
     this.#downloadSkyh.onclick = () => this.#downloadSkyhFile();
@@ -441,7 +443,28 @@ class HuffmanViz {
   get #step() { return 1200 / Number(this.#speed.value); }
 
   #sleep(ms, t) {
-    return new Promise(r => setTimeout(r, ms)).then(() => { if (t !== this.#token) throw CANCEL; });
+    const check = () => { if (t !== this.#token) throw CANCEL; };
+    if (this.#skip) return Promise.resolve().then(check); // saltando: no se espera nada
+    return new Promise(res => {
+      const wake = () => { clearTimeout(id); this.#waiters.delete(wake); res(); };
+      const id = setTimeout(wake, ms);
+      this.#waiters.add(wake);
+    }).then(check);
+  }
+
+  // El botón es "Siguiente" y, mientras corre una animación, pasa a "Saltar".
+  #onNext() {
+    if (this.#busy && this.#skippable) return this.#skipAnimation();
+    return this.#advance();
+  }
+
+  // Salta la animación en curso hasta su estado final; al terminar, #sync devuelve "Siguiente".
+  #skipAnimation() {
+    if (this.#skip) return;
+    this.#skip = true;
+    this.#next.disabled = true;
+    document.getAnimations().forEach(a => { try { a.finish(); } catch {} });
+    [...this.#waiters].forEach(wake => wake());
   }
 
   #build(chars) {
@@ -511,6 +534,7 @@ class HuffmanViz {
     const chars = big ? all.slice(0, MAX_ANIM) : all;
     const t = ++this.#token;
     this.#build(chars);
+    this.#skip = false; this.#skippable = !big; // en textos largos no hay animación que saltar
     this.#next.disabled = true;
     this.#busy = true;
     this.#sync();
@@ -524,13 +548,18 @@ class HuffmanViz {
     } catch (e) {
       if (e !== CANCEL) throw e;
     } finally {
-      if (t === this.#token) { this.#busy = false; this.#sync(); }
+      if (t === this.#token) { this.#busy = false; this.#skip = false; this.#skippable = false; this.#sync(); }
     }
   }
 
   async #countPhase(chars, t) {
     for (let i = 0; i < chars.length; i++) {
       const ch = chars[i], cell = this.#cells[i], step = this.#step;
+      if (this.#skip) { // saltando: se cuenta el carácter sin animarlo
+        this.#addLetter(this.#boxes.get(ch) || this.#newBox(ch), ch);
+        cell.classList.add("seen");
+        continue;
+      }
       this.#status.textContent = `Etapa 1: leyendo carácter ${i + 1} de ${chars.length}`;
       cell.scrollIntoView({ block: "nearest" });
       this.#ptr.style.transitionDuration = Math.min(300, step * 0.5) + "ms";
@@ -671,10 +700,11 @@ class HuffmanViz {
   async #tween(d, t) {
     const ns = this.#nodes, t0 = performance.now();
     ns.forEach(o => { o.x0 = o.x; o.y0 = o.y; });
-    await new Promise(res => {
+    if (this.#skip) for (const o of ns) { o.x = o.tx; o.y = o.ty; this.#draw(o); }
+    else await new Promise(res => {
       const f = now => {
         if (t !== this.#token) return res();
-        const p = Math.min(1, (now - t0) / d), e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+        const p = this.#skip ? 1 : Math.min(1, (now - t0) / d), e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
         for (const o of ns) { o.x = o.x0 + (o.tx - o.x0) * e; o.y = o.y0 + (o.ty - o.y0) * e; this.#draw(o); }
         p < 1 ? requestAnimationFrame(f) : res();
       };
@@ -965,6 +995,11 @@ class HuffmanViz {
       else if (this.#stage === 6) this.#next.disabled = false; // siguiente: etapa 5 (inspector)
       else if (this.#stage === 7) this.#next.disabled = true;
     }
+    // Mientras corre una animación el botón pasa a "Saltar"; al terminar vuelve a "Siguiente".
+    const skippable = this.#busy && this.#skippable && !d && !ins;
+    this.#next.textContent = skippable ? "Saltar" : "Siguiente";
+    if (skippable) this.#next.disabled = this.#skip;
+
     // Resalta la etapa del flujo en la que estamos (la 5 es el Inspector).
     const s = this.#stage;
     const step = ins ? 5 : this.#busy && s === 0 ? 2 : s === 0 ? 1 : s <= 2 ? 2 : s <= 5 ? 3 : s === 6 ? 4 : 5;
@@ -1206,6 +1241,14 @@ class HuffmanViz {
     let bits = 0;
     for (let i = 0; i < n; i++) {
       const ch = this.#chars[i], cell = this.#cells[i], { leaf, code } = this.#codes.get(ch);
+      if (this.#skip) { // saltando: el código se agrega sin animar el recorrido
+        const fin = document.createElement("div");
+        fin.className = "obox"; fin.textContent = code;
+        this.#out.append(fin);
+        cell.classList.add("seen");
+        bits += code.length;
+        continue;
+      }
       this.#status.textContent = `Etapa 6: codificando carácter ${i + 1} de ${n}`;
       if (cell.offsetTop < v.scrollTop || cell.offsetTop + 32 > v.scrollTop + v.clientHeight) v.scrollTop = cell.offsetTop - v.clientHeight / 2;
       this.#ptr.style.transitionDuration = Math.min(300, step * 0.5) + "ms";
@@ -1273,6 +1316,14 @@ class HuffmanViz {
     };
     const d = Math.min(600, step * 0.7);
     for (const { o, nodes, bits } of paths) {
+      if (this.#skip) { // saltando: el código aparece directamente bajo su hoja
+        const fin = document.createElement("div");
+        fin.className = "cbox done";
+        fin.textContent = bits.join("") || "0";
+        fin.style.transform = pos(o.x, o.y + 52);
+        this.#tin.append(fin);
+        continue;
+      }
       const box = document.createElement("div");
       box.className = "cbox";
       box.style.transform = pos(root.x, root.y);
@@ -1296,6 +1347,8 @@ class HuffmanViz {
   async #advance() {
     if (this.#stage === 0) return this.#run(); // Etapa 1 → 2: analizar y mostrar las cajas de frecuencia
     const t = this.#token;
+    this.#skip = false;
+    this.#skippable = this.#stage >= 2 && this.#stage <= 5; // el paso al inspector no es una animación
     this.#next.disabled = true;
     this.#busy = true;
     this.#sync();
@@ -1325,7 +1378,7 @@ class HuffmanViz {
     } catch (e) {
       if (e !== CANCEL) throw e;
     } finally {
-      if (t === this.#token) { this.#busy = false; this.#sync(); }
+      if (t === this.#token) { this.#busy = false; this.#skip = false; this.#skippable = false; this.#sync(); }
     }
   }
 
@@ -1340,6 +1393,7 @@ class HuffmanViz {
       return this.#sync();
     }
     this.#busy = false;
+    this.#skip = false; this.#skippable = false;
     this.#token++;
     document.querySelectorAll(".fly").forEach(n => n.remove());
     this.#stack.innerHTML = "";
