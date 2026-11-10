@@ -10,228 +10,78 @@
     <link rel="stylesheet" href="style.css">
 
     <style>
-        .grafica-seccion {
-            margin-top: 30px;
+        .menu-principal {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 24px;
+            margin: 40px auto;
+            max-width: 900px;
         }
 
-        #grafica-tiempos {
-            width: 100%;
-            max-width: 1000px;
-            height: 400px;
-            display: block;
-            margin: 20px auto;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            background: white;
+        .opcion {
+            flex: 1 1 320px;
+            max-width: 420px;
+            padding: 28px 24px;
+            text-align: center;
+            text-decoration: none;
+            color: #e2e8f0;
+            background: #111827;
+            border: 2px solid #334155;
+            border-radius: 12px;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .opcion:hover,
+        .opcion:focus-visible {
+            border-color: #38bdf8;
+            transform: translateY(-3px);
+        }
+
+        .opcion h2 {
+            margin: 0 0 10px;
+            color: #38bdf8;
+        }
+
+        .opcion p {
+            margin: 0;
+            color: #94a3b8;
         }
     </style>
 </head>
 
 <body>
 
-    <!-- Encabezado principal -->
     <header>
 
         <h1>Skynet Algorithm Visualizer</h1>
 
         <p>
-            Visualizador de algoritmos de ordenamiento
+            Elige qué visualizador quieres usar
         </p>
 
     </header>
 
 
-    <!-- Controles principales -->
     <main>
 
-        <section class="controles">
-
-            <label for="algoritmo">
-                Algoritmo:
-            </label>
-
-            <select id="algoritmo">
-
-                <option value="bubble">
-                    Bubble Sort
-                </option>
-
-                <option value="selection">
-                    Selection Sort
-                </option>
-
-                <option value="insertion">
-                    Insertion Sort
-                </option>
-
-                <option value="gnome">
-                    Gnome Sort
-                </option>
-
-                <option value="exchange">
-                    Exchange Sort
-                </option>
-
-                <option value="stooge">
-                    Stooge Sort
-                </option>
-
-                <option value="quick">
-                    Quick Sort
-                </option>
-
-                <option value="merge">
-                    Merge Sort
-                </option>
-
-            </select>
-
-
-            <button id="generar">
-                Generar datos
-            </button>
-
-
-            <button id="iniciar">
-                Iniciar
-            </button>
-
-
-            <button id="reiniciar">
-                Reiniciar
-            </button>
-
-        </section>
-
-
-        <!-- Control de velocidad -->
-        <section class="velocidad">
-
-            <label for="velocidad">
-                Velocidad:
-            </label>
-
-            <input
-                type="range"
-                id="velocidad"
-                min="1"
-                max="10"
-                value="5"
-            >
-
-        </section>
-
-
-        <!-- Área donde aparecerán las barras -->
-        <section class="visualizacion">
-
-            <h2>
-                Visualización
-            </h2>
-
-            <div id="contenedor-barras">
-
-                <!--
-                    Las barras del arreglo
-                    serán creadas mediante JavaScript.
-                -->
-
-            </div>
-
-        </section>
-
-
-        <!-- Información del algoritmo -->
-        <section class="informacion">
-
-            <h2>
-                Información del algoritmo
-            </h2>
-
-
-            <p>
-
-                <strong>
-                    Algoritmo:
-                </strong>
-
-                <span id="nombre-algoritmo">
-                    Bubble Sort
-                </span>
-
-            </p>
-
-
-            <p>
-
-                <strong>
-                    Complejidad:
-                </strong>
-
-                <span id="complejidad">
-                    O(n²)
-                </span>
-
-            </p>
-
-
-            <p>
-
-                <strong>
-                    Comparaciones:
-                </strong>
-
-                <span id="comparaciones">
-                    0
-                </span>
-
-            </p>
-
-
-            <p>
-
-                <strong>
-                    Intercambios:
-                </strong>
-
-                <span id="intercambios">
-                    0
-                </span>
-
-            </p>
-
-
-            <p>
-
-                <strong>
-                    Tiempo de ejecución:
-                </strong>
-
-                <span id="tiempo-ejecucion">
-                    0 ms
-                </span>
-
-            </p>
-
-        </section>
-
-
-        <!-- Gráfica comparativa -->
-        <section class="grafica-seccion">
-
-            <h2>
-                Comparación de tiempos de ejecución
-            </h2>
-
-            <canvas id="grafica-tiempos"></canvas>
-
-        </section>
-
+        <nav class="menu-principal">
+
+            <a class="opcion" href="algorithm_visualizer.html">
+                <h2>Algorithm Visualizer</h2>
+                <p>Visualizador de algoritmos de ordenamiento</p>
+            </a>
+
+            <a class="opcion" href="huffman_visualizer.html">
+                <h2>Huffman Visualizer</h2>
+                <p>Compresión de texto con Huffman paso a paso, formato .skyh e inspector</p>
+            </a>
+
+        </nav>
 
     </main>
 
 
-    <!-- Pie de página -->
     <footer>
 
         <p>
@@ -239,9 +89,6 @@
         </p>
 
     </footer>
-
-
-    <script src="script.js"></script>
 
 </body>
 

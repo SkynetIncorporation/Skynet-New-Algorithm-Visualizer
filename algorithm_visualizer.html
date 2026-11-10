@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Skynet Algorithm Visualizer</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <style>
+        .grafica-seccion {
+            margin-top: 30px;
+        }
+
+        #grafica-tiempos {
+            width: 100%;
+            max-width: 1000px;
+            height: 400px;
+            display: block;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Encabezado principal -->
+    <header>
+
+        <h1>Skynet Algorithm Visualizer</h1>
+
+        <p>
+            Visualizador de algoritmos de ordenamiento
+        </p>
+
+    </header>
+
+
+    <!-- Controles principales -->
+    <main>
+
+        <section class="controles">
+
+            <label for="algoritmo">
+                Algoritmo:
+            </label>
+
+            <select id="algoritmo">
+
+                <option value="bubble">
+                    Bubble Sort
+                </option>
+
+                <option value="selection">
+                    Selection Sort
+                </option>
+
+                <option value="insertion">
+                    Insertion Sort
+                </option>
+
+                <option value="gnome">
+                    Gnome Sort
+                </option>
+
+                <option value="exchange">
+                    Exchange Sort
+                </option>
+
+                <option value="stooge">
+                    Stooge Sort
+                </option>
+
+                <option value="quick">
+                    Quick Sort
+                </option>
+
+                <option value="merge">
+                    Merge Sort
+                </option>
+
+            </select>
+
+
+            <button id="generar">
+                Generar datos
+            </button>
+
+
+            <button id="iniciar">
+                Iniciar
+            </button>
+
+
+            <button id="reiniciar">
+                Reiniciar
+            </button>
+
+        </section>
+
+
+        <!-- Control de velocidad -->
+        <section class="velocidad">
+
+            <label for="velocidad">
+                Velocidad:
+            </label>
+
+            <input
+                type="range"
+                id="velocidad"
+                min="1"
+                max="10"
+                value="5"
+            >
+
+        </section>
+
+
+        <!-- Área donde aparecerán las barras -->
+        <section class="visualizacion">
+
+            <h2>
+                Visualización
+            </h2>
+
+            <div id="contenedor-barras">
+
+                <!--
+                    Las barras del arreglo
+                    serán creadas mediante JavaScript.
+                -->
+
+            </div>
+
+        </section>
+
+
+        <!-- Información del algoritmo -->
+        <section class="informacion">
+
+            <h2>
+                Información del algoritmo
+            </h2>
+
+
+            <p>
+
+                <strong>
+                    Algoritmo:
+                </strong>
+
+                <span id="nombre-algoritmo">
+                    Bubble Sort
+                </span>
+
+            </p>
+
+
+            <p>
+
+                <strong>
+                    Complejidad:
+                </strong>
+
+                <span id="complejidad">
+                    O(n²)
+                </span>
+
+            </p>
+
+
+            <p>
+
+                <strong>
+                    Comparaciones:
+                </strong>
+
+                <span id="comparaciones">
+                    0
+                </span>
+
+            </p>
+
+
+            <p>
+
+                <strong>
+                    Intercambios:
+                </strong>
+
+                <span id="intercambios">
+                    0
+                </span>
+
+            </p>
+
+
+            <p>
+
+                <strong>
+                    Tiempo de ejecución:
+                </strong>
+
+                <span id="tiempo-ejecucion">
+                    0 ms
+                </span>
+
+            </p>
+
+        </section>
+
+
+        <!-- Gráfica comparativa -->
+        <section class="grafica-seccion">
+
+            <h2>
+                Comparación de tiempos de ejecución
+            </h2>
+
+            <canvas id="grafica-tiempos"></canvas>
+
+        </section>
+
+
+    </main>
+
+
+    <!-- Pie de página -->
+    <footer>
+
+        <p>
+            Skynet Algorithm Visualizer © 2026
+        </p>
+
+    </footer>
+
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>
