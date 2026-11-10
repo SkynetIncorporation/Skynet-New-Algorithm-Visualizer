@@ -914,6 +914,7 @@ class HuffmanViz {
       <h3>Árbol de Huffman reconstruido</h3>
       <p class="muted">Rama izquierda = 0, rama derecha = 1. Las hojas muestran el símbolo y su frecuencia.</p>
       ${this.#treeSvg(info.raiz)}
+      ${info.raiz ? '<div class="bar" style="margin-top:10px"><button id="treeDownload" class="ghost">Descargar SVG</button></div>' : ""}
 
       <h3>Datos comprimidos</h3>
       ${datosHtml}
@@ -923,6 +924,8 @@ class HuffmanViz {
       <div class="bar"><button id="inspDecomp">DESCOMPRIMIR</button></div>
       <div id="inspResult" aria-live="polite"></div>`;
     body.querySelector("#inspDecomp").onclick = () => this.#inspDecompress(info);
+    const dlTree = body.querySelector("#treeDownload");
+    if (dlTree) dlTree.onclick = () => this.#downloadTreeSvg(nombre);
   }
 
   // Árbol reconstruido (nodos de skyh.js) dibujado como SVG; las hojas quedan alineadas en el eje X.
@@ -963,6 +966,34 @@ class HuffmanViz {
     };
     dibujar(raiz, "");
     return `<div class="tree-scroll"><svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Árbol de Huffman reconstruido">${aristas}${nodos}</svg></div>`;
+  }
+
+  // Descarga el árbol reconstruido como un .svg independiente. En pantalla los estilos vienen de la hoja CSS
+  // y de variables de tema; aquí se incrustan como atributos con los colores ya resueltos del tema actual.
+  #downloadTreeSvg(nombre) {
+    const svg = this.#inspBody.querySelector(".tree-scroll svg");
+    if (!svg) return;
+    const NS = "http://www.w3.org/2000/svg";
+    const copia = svg.cloneNode(true);
+    const origen = svg.querySelectorAll("*"), destino = copia.querySelectorAll("*");
+    const trazo = ["fill", "stroke", "stroke-width"], fuente = ["font-family", "font-size", "font-weight"];
+    origen.forEach((el, i) => {
+      if (!el.getAttribute("class")) return;
+      const cs = getComputedStyle(el);
+      for (const prop of el.tagName === "text" ? [...trazo, ...fuente] : trazo) {
+        destino[i].setAttribute(prop, cs.getPropertyValue(prop));
+      }
+      destino[i].removeAttribute("class");
+    });
+    // Fondo sólido (el del contenedor) para que los textos se lean sin importar dónde se abra el archivo.
+    const fondo = document.createElementNS(NS, "rect");
+    fondo.setAttribute("width", "100%"); fondo.setAttribute("height", "100%");
+    fondo.setAttribute("fill", getComputedStyle(svg.closest(".tree-scroll")).backgroundColor);
+    copia.insertBefore(fondo, copia.firstChild);
+    const xml = '<?xml version="1.0" encoding="UTF-8"?>\n' + new XMLSerializer().serializeToString(copia);
+    const base = (nombre || "").replace(/\.[^.]*$/, "") || "archivo";
+    Skyh.descargar(new TextEncoder().encode(xml), `arbol_huffman_${base}.svg`, "image/svg+xml;charset=utf-8");
+    this.#status.textContent = "Árbol de Huffman descargado como SVG.";
   }
 
   // Descompresión explícita desde el inspector: muestra el texto, el veredicto del SHA-256 y permite descargarlo.
